@@ -4,6 +4,23 @@ import com.liferay.workspace.testing.ServerStopTask;
 tasks.register("serverStart", ServerStartTask)
 tasks.register("serverStop", ServerStopTask)
 
+/*
+Currently, initBundle is very sensitive to any changes to the bundle directory's files,
+meaning that it will re-run-too often and sometimes nuke the directory.
+
+This bypasses that by only running if there are no startup scripts found.
+
+The REAL fix is to update the initBundle task with more specific outputs declared.
+*/
+tasks.named("initBundle") {
+	onlyIf {
+		fileTree(gradle.liferayWorkspace.homeDir) {
+			include("**/catalina.sh")
+			include("**/catalina.bat")
+		}.isEmpty()
+	}
+}
+
 tasks.named("serverStart") {
 	dependsOn ":initBundle"
 }
