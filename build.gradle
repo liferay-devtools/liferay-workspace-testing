@@ -1,1 +1,9 @@
-// Check GETTING_STARTED.markdown for information regarding usage.
+import com.liferay.workspace.testing.ServerStartTask;
+import com.liferay.workspace.testing.ServerStopTask;
+
+tasks.register("serverStart", ServerStartTask)
+tasks.register("serverStop", ServerStopTask)
+
+tasks.named("serverStart") {
+	dependsOn ":initBundle"
+}
