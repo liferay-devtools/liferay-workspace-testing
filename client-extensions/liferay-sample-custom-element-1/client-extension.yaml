@@ -1,0 +1,13 @@
+assemble:
+    - from: build/static
+      into: static
+liferay-sample-custom-element-1:
+    friendlyURLMapping: vanilla-counter
+    htmlElementName: vanilla-counter
+    instanceable: false
+    name: Liferay Sample Custom Element 1
+    portletCategoryName: category.client-extensions
+    type: customElement
+    urls:
+        - index.*.js
+    useESM: false

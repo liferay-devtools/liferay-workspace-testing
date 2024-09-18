@@ -1,0 +1,54 @@
+import com.liferay.workspace.testing.ExecuteAndWaitForTask
+import com.liferay.workspace.testing.WaitForLogOutputTask
+
+apply plugin: "com.liferay.frontend.plugin"
+
+/**
+ * Example 1: Deploy and wait for ready
+ */
+
+// Define setup task
+tasks.register('deployClientExtensions1', WaitForLogOutputTask) {
+    dependsOn ":client-extensions:liferay-sample-custom-element-1:deploy"
+    // Declare which server output to wait for
+    expectedLogOutput.set "STARTED liferaysamplecustomelement1"
+}
+
+// Declare task ordering and output artifacts
+tasks.register('setUpPackageRunTest', GradleBuild) {
+    outputs.files fileTree(gradle.liferayWorkspace.homeDir) {
+        include "**/liferay-sample-custom-element-1.zip"
+    }
+    tasks = ["deployClientExtensions1"]
+}
+
+/**
+ * Example 2: Setup task ordering
+ */
+
+// Define setup tasks
+
+// The SpringBoot oauth client extension  must be deployed before the SpringBoot server starts
+tasks.register('deploySpringBootClientExtension', WaitForLogOutputTask) {
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:deploy"
+    expectedLogOutput.set "OAuth 2 application with external reference code liferay-sample-etc-spring-boot-oauth-application-user-agent and company ID"
+}
+
+// After the OAuth application is registered, start the SpringBoot server
+tasks.register('startSpringBootServer', ExecuteAndWaitForTask) {
+    execArgs.addAll rootProject.file("gradlew").path, ":client-extensions:liferay-sample-etc-spring-boot:bootRun"
+    expectedOutput.set "Started SampleSpringBootApplication in"
+    waitForTimeout.set 120 * 1000
+}
+
+tasks.register('setUpPackageRunTestSpringBoot', GradleBuild) {
+    outputs.files fileTree(gradle.liferayWorkspace.homeDir) {
+        include "**/liferay-sample-etc-spring-boot.zip"
+    }
+
+    tasks = ["deploySpringBootClientExtension", "startSpringBootServer"]
+}
+
+tasks.named('packageRunTest') {
+    dependsOn 'setUpPackageRunTestSpringBoot'
+}
