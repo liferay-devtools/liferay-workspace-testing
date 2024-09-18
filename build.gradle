@@ -57,8 +57,6 @@ subprojects {
 			testModules group: "org.apache.aries.jmx", name: "org.apache.aries.jmx.core", version: "latest.release"
 		}
 
-		tasks.named('stopTestableTomcat') {enabled = false}
-
 		// Is there a bundle?
 		if (executableFilesFileTree.isEmpty()) {
 			/*
