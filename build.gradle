@@ -1,8 +1,11 @@
-import com.liferay.workspace.testing.ServerStartTask;
-import com.liferay.workspace.testing.ServerStopTask;
+import com.liferay.gradle.util.OSDetector;
 
-tasks.register("serverStart", ServerStartTask)
-tasks.register("serverStop", ServerStopTask)
+// Get executable file name based on OS
+String executableFileName = OSDetector.isWindows() ? "catalina.bat" : "catalina.sh";
+
+FileTree executableFilesFileTree = fileTree(gradle.liferayWorkspace.homeDir) {
+	include("**/${executableFileName}")
+}
 
 /*
 Currently, initBundle is very sensitive to any changes to the bundle directory's files,
@@ -14,13 +17,95 @@ The REAL fix is to update the initBundle task with more specific outputs declare
 */
 tasks.named("initBundle") {
 	onlyIf {
-		fileTree(gradle.liferayWorkspace.homeDir) {
-			include("**/catalina.sh")
-			include("**/catalina.bat")
-		}.isEmpty()
+		executableFilesFileTree.isEmpty()
 	}
 }
 
-tasks.named("serverStart") {
-	dependsOn ":initBundle"
+/*
+Gather bundle info to configure the *TestableTomcat tasks and extension
+ */
+Provider<File> tomcatExecutableFileProvider = provider {
+	executableFilesFileTree.singleFile
+}
+
+Provider<File> tomcatBinDirProvider = tomcatExecutableFileProvider.map { it.parentFile }
+
+Provider<File> tomcatDirProvider = tomcatBinDirProvider.map { it.parentFile }
+
+subprojects {
+	Project project ->
+
+	pluginManager.withPlugin('com.liferay.test.integration') {
+		dependencies {
+			/*
+			These dependencies are needed by the test runner
+			 */
+			testIntegrationImplementation group: "biz.aQute.bnd", name: "biz.aQute.bndlib", version: "3.5.0"
+			testIntegrationImplementation group: "com.liferay", name: "org.apache.logging.log4j", version: "2.17.1.LIFERAY-PATCHED-1"
+			testIntegrationImplementation group: "com.liferay", name: "org.apache.logging.log4j.core", version: "2.17.1.LIFERAY-PATCHED-1"
+			testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.test", version: "latest.release"
+			testIntegrationImplementation group: "junit", name: "junit", version: "4.13.1"
+			testIntegrationRuntimeOnly group: "org.slf4j", name: "log4j-over-slf4j", version: "1.7.25"
+			testIntegrationImplementation group: 'com.liferay', name: 'com.liferay.arquillian.extension.junit.bridge', version: 'latest.release'
+
+			/*
+			These dependencies are deployed to the bundle
+			 */
+			testModules group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge.connector", version: 'latest.release'
+			testModules group: "com.liferay.portal", name: "com.liferay.portal.test", version: "latest.release"
+			testModules group: "com.liferay.portal", name: "com.liferay.portal.test.integration", version: "latest.release"
+			testModules group: "org.apache.aries.jmx", name: "org.apache.aries.jmx.core", version: "latest.release"
+		}
+
+		tasks.named('stopTestableTomcat') {enabled = false}
+
+		// Is there a bundle?
+		if (executableFilesFileTree.isEmpty()) {
+			/*
+			If there is no bundle, then the *TestableTomcat tasks will fail during configuration due to eager
+			configuration looking for certain paths.
+			*/
+
+			/*
+			Disable the tasks so they will not look for the paths
+			 */
+			tasks.named('setUpTestableTomcat') {enabled = false}
+			tasks.named('startTestableTomcat') {enabled = false}
+			tasks.named('stopTestableTomcat') {enabled = false}
+
+			/*
+			Create a separate GradleBuild that will invoke only after the bundle has initialized
+			 */
+			tasks.register("testIntegrationGradleBuild", GradleBuild) {
+				dependsOn ":initBundle"
+				tasks = ["testIntegration"]
+			}
+
+			/*
+			Skip the testIntegration task during this build, but depend on the separate build
+			 */
+			tasks.named('testIntegration') {
+				dependsOn tasks.named('testIntegrationGradleBuild')
+				enabled = false
+			}
+
+			return
+		}
+
+		/*
+		Configure the *TestableTomcat tasks and extension
+		 */
+		tasks.named('setUpTestableTomcat') {
+			dir tomcatDirProvider
+		}
+		tasks.named('startTestableTomcat') {
+			binDir tomcatBinDirProvider
+		}
+		tasks.named('stopTestableTomcat') {
+			binDir tomcatBinDirProvider
+		}
+		testIntegrationTomcat {
+			dir tomcatDirProvider
+		}
+	}
 }
