@@ -27,3 +27,4 @@
 test-results
 **/activation-key*
 **/test-classes
+configs/local/deploy/*.jar
