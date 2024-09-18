@@ -1,0 +1,9 @@
+dependencies {
+	implementation project(":modules:demo-local-service-wrapper")
+
+	testIntegrationImplementation group: "com.liferay.portal", name: "release.dxp.api"
+}
+
+tasks.named('testIntegration') {
+	dependsOn ":modules:demo-local-service-wrapper:deploy"
+}
