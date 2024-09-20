@@ -57,39 +57,6 @@ subprojects {
 			testModules group: "org.apache.aries.jmx", name: "org.apache.aries.jmx.core", version: "latest.release"
 		}
 
-		// Is there a bundle?
-		if (executableFilesFileTree.isEmpty()) {
-			/*
-			If there is no bundle, then the *TestableTomcat tasks will fail during configuration due to eager
-			configuration looking for certain paths.
-			*/
-
-			/*
-			Disable the tasks so they will not look for the paths
-			 */
-			tasks.named('setUpTestableTomcat') {enabled = false}
-			tasks.named('startTestableTomcat') {enabled = false}
-			tasks.named('stopTestableTomcat') {enabled = false}
-
-			/*
-			Create a separate GradleBuild that will invoke only after the bundle has initialized
-			 */
-			tasks.register("testIntegrationGradleBuild", GradleBuild) {
-				dependsOn ":initBundle"
-				tasks = ["testIntegration"]
-			}
-
-			/*
-			Skip the testIntegration task during this build, but depend on the separate build
-			 */
-			tasks.named('testIntegration') {
-				dependsOn tasks.named('testIntegrationGradleBuild')
-				enabled = false
-			}
-
-			return
-		}
-
 		/*
 		Configure the *TestableTomcat tasks and extension
 		 */
