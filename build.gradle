@@ -58,7 +58,7 @@ subprojects {
 		}
 
 		// Is there a bundle?
-		if (executableFilesFileTree.isEmpty()) {
+		if (executableFilesFileTree.isEmpty() && false) {
 			/*
 			If there is no bundle, then the *TestableTomcat tasks will fail during configuration due to eager
 			configuration looking for certain paths.
