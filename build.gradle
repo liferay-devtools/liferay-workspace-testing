@@ -1,4 +1,20 @@
 import com.liferay.gradle.util.OSDetector;
+import com.liferay.workspace.testing.ExecuteAndWaitForTask
+import org.zeroturnaround.process.PidProcess
+import org.zeroturnaround.process.Processes
+import org.zeroturnaround.process.ProcessUtil
+
+import java.util.concurrent.TimeUnit
+
+tasks.named('startDockerContainer') {
+	dependsOn 'stopDockerContainer'
+}
+
+tasks.named('createDockerContainer') {
+	dependsOn 'removeDockerContainer'
+
+	hostConfig.binds.put("${gradle.liferayWorkspace.homeDir}/routes", "/opt/liferay/routes")
+}
 
 // Get executable file name based on OS
 String executableFileName = OSDetector.isWindows() ? "catalina.bat" : "catalina.sh";
@@ -34,6 +50,41 @@ Provider<File> tomcatDirProvider = tomcatBinDirProvider.map { it.parentFile }
 
 subprojects {
 	Project project ->
+
+	afterEvaluate {
+		if (file("client-extension.yaml").exists()) {
+			clean {
+				delete fileTree(gradle.liferayWorkspace.homeDir) {
+					include "**/${tasks.named('buildClientExtensionZip').map{it.archiveFileName}}"
+				}
+			}
+		}
+
+		tasks.withType(ExecuteAndWaitForTask) {
+			task ->
+			String name = task.name
+
+			String cleanTaskName = "clean" + name.charAt(0).toUpperCase() + name.substring(1)
+
+			tasks.named(cleanTaskName) {
+				doFirst {
+					Provider<Object> pidProvider = tasks.named('startSpringBootServer').flatMap {it.pid}
+
+					if (!pidProvider.isPresent()) {
+						return
+					}
+
+					PidProcess process = Processes.newPidProcess(pidProvider.get());
+
+					if (!process.isAlive()) {
+						return
+					}
+
+					ProcessUtil.destroyGracefullyOrForcefullyAndWait(process, 30, TimeUnit.SECONDS, 10, TimeUnit.SECONDS);
+				}
+			}
+		}
+	}
 
 	pluginManager.withPlugin('com.liferay.test.integration') {
 		dependencies {

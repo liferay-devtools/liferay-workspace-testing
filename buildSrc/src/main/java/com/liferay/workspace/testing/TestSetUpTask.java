@@ -2,6 +2,7 @@ package com.liferay.workspace.testing;
 
 import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
+
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -52,8 +53,9 @@ public class TestSetUpTask extends DefaultTask {
 				if (_outputGlobs.isPresent()) {
 					TaskOutputs taskOutputs = getOutputs();
 
-					WorkspaceExtension workspaceExtension = GradleUtil.getExtension(
-						project1.getGradle(), WorkspaceExtension.class);
+					WorkspaceExtension workspaceExtension =
+						GradleUtil.getExtension(
+							project1.getGradle(), WorkspaceExtension.class);
 
 					taskOutputs.files(
 						project.fileTree(
@@ -64,16 +66,13 @@ public class TestSetUpTask extends DefaultTask {
 								}
 							}));
 				}
-
-			}
-		);
+			});
 		_startServer = objects.property(Boolean.class);
 		_startServer.set(false);
 	}
 
 	@TaskAction
 	public void foo() {
-
 	}
 
 	@Input
@@ -81,20 +80,18 @@ public class TestSetUpTask extends DefaultTask {
 		return _outputGlobs;
 	}
 
-	private final SetProperty<String> _outputGlobs;
+	@Input
+	public Property<Boolean> getStartServer() {
+		return _startServer;
+	}
 
 	@Input
 	public SetProperty<String> getTaskPaths() {
 		return _taskPaths;
 	}
 
-	private final SetProperty<String> _taskPaths;
-
-	@Input
-	public Property<Boolean> getStartServer() {
-		return _startServer;
-	}
-
+	private final SetProperty<String> _outputGlobs;
 	private final Property<Boolean> _startServer;
+	private final SetProperty<String> _taskPaths;
 
 }

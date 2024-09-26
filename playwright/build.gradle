@@ -1,0 +1,59 @@
+import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil
+import com.liferay.workspace.testing.ExecuteAndWaitForTask
+import com.liferay.workspace.testing.ServerUtil
+
+import java.util.concurrent.TimeUnit
+
+import org.zeroturnaround.process.PidProcess
+import org.zeroturnaround.process.ProcessUtil
+import org.zeroturnaround.process.Processes
+
+apply plugin: "com.liferay.frontend.plugin"
+
+def checkInterval = 3 * 1000
+def timeout = 2 * 60 * 1000
+
+
+
+tasks.register('startSpringBootServer', ExecuteAndWaitForTask) {
+	dependsOn ':startDockerContainer'
+
+	doFirst {
+		def file = project.file("${gradle.liferayWorkspace.homeDir}/routes/default/liferay-sample-etc-spring-boot")
+
+		println("WAITING FOR FILE ${file}")
+		GradleUtil.waitFor({file.exists()}, checkInterval, timeout)
+		println("FOUND!")
+	}
+
+	execArgs.addAll rootProject.file("gradlew").path, ":client-extensions:liferay-sample-etc-spring-boot:bootRun"
+	expectedOutput.set "Started SampleSpringBootApplication in"
+
+	onlyIf {
+		!ServerUtil.isReachable("http://localhost:58081")
+	}
+
+	waitForTimeout.set timeout
+}
+
+//tasks.named('cleanStartSpringBootServer') {
+//	doFirst {
+//		Provider<Object> pidProvider = tasks.named('startSpringBootServer').flatMap {it.pid}
+//
+//		if (!pidProvider.isPresent()) {
+//			return
+//		}
+//
+//		PidProcess process = Processes.newPidProcess(pidProvider.get());
+//
+//		if (!process.isAlive()) {
+//			return
+//		}
+//
+//		ProcessUtil.destroyGracefullyOrForcefullyAndWait(process, 30, TimeUnit.SECONDS, 10, TimeUnit.SECONDS);
+//	}
+//}
+
+tasks.named('packageRunTest') {
+	dependsOn 'startSpringBootServer'
+}

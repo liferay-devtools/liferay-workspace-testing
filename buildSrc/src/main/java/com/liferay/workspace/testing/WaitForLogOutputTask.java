@@ -2,7 +2,16 @@ package com.liferay.workspace.testing;
 
 import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
+
+import java.io.File;
+import java.io.RandomAccessFile;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.ProjectLayout;
@@ -10,12 +19,10 @@ import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.TaskAction;
-
-import java.io.File;
-import java.io.RandomAccessFile;
 
 /**
  * @author Drew Brokke
@@ -27,22 +34,91 @@ public class WaitForLogOutputTask extends DefaultTask {
 
 		ObjectFactory objects = project.getObjects();
 
-		_expectedLogOutput = objects.property(String.class);
+		_expectedLines = objects.setProperty(String.class);
 
-		onlyIf(
-			task -> {
-				if (_expectedLogOutput.isPresent()) {
-					return true;
-				}
-
-				return false;
-			});
-
-		_logFile = objects.fileProperty();
+		_file = objects.fileProperty();
 
 		ProjectLayout layout = project.getLayout();
 
-		_logFile.set(layout.file(project.provider(this::_getBundleServerFile)));
+		_file.convention(
+			layout.file(project.provider(this::_getBundleServerFile)));
+
+		_readFromEndOfFile = objects.property(Boolean.class);
+	}
+
+	@TaskAction
+	public void checkLogs() throws Exception {
+		RegularFile regularFile = _file.get();
+
+		try (RandomAccessFile randomAccessFile = new RandomAccessFile(
+				regularFile.getAsFile(), "r")) {
+
+			if (_readFromEndOfFile.getOrElse(true)) {
+				long length = randomAccessFile.length();
+
+				randomAccessFile.skipBytes((int)length);
+			}
+
+			Set<String> expectedLines = new HashSet<>(_expectedLines.get());
+
+			System.out.println("Waiting for expected output:");
+
+			int checkInterval = 3 * 1000;
+			int timeout = 2 * 60 * 1000;
+
+			boolean waitFor = GradleUtil.waitFor(
+				() -> {
+					String line = randomAccessFile.readLine();
+
+					while (line != null) {
+						System.out.printf("Checking line: %s%n", line);
+
+						Iterator<String> iterator = expectedLines.iterator();
+
+						while (iterator.hasNext()) {
+							String expectedLine = iterator.next();
+
+							if (line.contains(expectedLine)) {
+								System.out.printf(
+									"%nFound expected line: %s%n%n",
+									expectedLine);
+
+								iterator.remove();
+							}
+						}
+
+						if (expectedLines.isEmpty()) {
+							return true;
+						}
+
+						line = randomAccessFile.readLine();
+					}
+
+					return false;
+				},
+				checkInterval, timeout);
+
+			if (!waitFor) {
+				throw new GradleException(
+					String.format(
+						"Could not find expected output: %s", expectedLines));
+			}
+		}
+	}
+
+	@Input
+	public SetProperty<String> getExpectedLines() {
+		return _expectedLines;
+	}
+
+	@InputFile
+	public RegularFileProperty getFile() {
+		return _file;
+	}
+
+	@Input
+	public Property<Boolean> getReadFromEndOfFile() {
+		return _readFromEndOfFile;
 	}
 
 	private File _getBundleServerFile() {
@@ -71,64 +147,15 @@ public class WaitForLogOutputTask extends DefaultTask {
 
 			if (date > max) {
 				logFile = file;
+				max = date;
 			}
 		}
 
 		return logFile;
 	}
 
-	@TaskAction
-	public void checkLogs() throws Exception {
-		RegularFile regularFile = _logFile.get();
-
-		try (RandomAccessFile randomAccessFile = new RandomAccessFile(
-			regularFile.getAsFile(), "r")) {
-
-			long length = randomAccessFile.length();
-
-			randomAccessFile.skipBytes((int)length);
-
-			String testLine = _expectedLogOutput.get();
-
-			System.out.printf("Waiting for expected output: %s%n", testLine);
-
-			int checkInterval = 3 * 1000;
-			int timeout = 2 * 60 * 1000;
-
-			GradleUtil.waitFor(
-				() -> {
-					String line = randomAccessFile.readLine();
-
-					while (line != null) {
-						if (line.contains(testLine)) {
-							System.out.println("FOUND!");
-
-							return true;
-						}
-
-						line = randomAccessFile.readLine();
-					}
-
-					return false;
-				},
-				checkInterval, timeout);
-		}
-	}
-
-	@Input
-	public Property<String> getExpectedLogOutput() {
-		return _expectedLogOutput;
-	}
-
-	private final Property<String> _expectedLogOutput;
-
-
-
-	@InputFile
-	public RegularFileProperty getLogFile() {
-		return _logFile;
-	}
-
-	private final RegularFileProperty _logFile;
+	private final SetProperty<String> _expectedLines;
+	private final RegularFileProperty _file;
+	private final Property<Boolean> _readFromEndOfFile;
 
 }
