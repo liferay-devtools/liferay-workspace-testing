@@ -12,7 +12,6 @@ pipeline {
 		}
 		stage('Run test script') {
 			steps {
-				sh 'ls'
 				sh './jenkins-test.sh'
 			}
 		}
