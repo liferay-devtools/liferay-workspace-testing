@@ -17,7 +17,7 @@ pipeline {
 		}
 		stage('Run integration tests') {
 			steps {
-				echo "ONLY ON A PR"
+				echo "./run-tests.sh"
 			}
 			when {
 				branch 'PR-*'
