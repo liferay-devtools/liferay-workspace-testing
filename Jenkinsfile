@@ -15,5 +15,13 @@ pipeline {
 				sh './jenkins-test.sh'
 			}
 		}
+		stage('Run integration tests') {
+			steps {
+				echo "ONLY ON A PR"
+			}
+			when {
+				branch 'PR-*'
+			}
+		}
 	}
 }
