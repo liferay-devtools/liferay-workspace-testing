@@ -1,0 +1,1 @@
+echo "Hello Jenkins! I'm a Liferay Workspace!"
