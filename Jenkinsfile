@@ -17,7 +17,7 @@ pipeline {
 		}
 		stage('Run integration tests') {
 			steps {
-				echo "./run-tests.sh"
+				sh "./run-tests.sh"
 			}
 			when {
 				branch 'PR-*'
