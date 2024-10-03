@@ -1,4 +1,11 @@
-import com.liferay.gradle.util.OSDetector;
+import com.liferay.gradle.util.OSDetector
+import com.liferay.workspace.testing.ExecuteAndWaitForTask
+
+import java.util.concurrent.TimeUnit;
+
+import org.zeroturnaround.process.PidProcess
+import org.zeroturnaround.process.ProcessUtil
+import org.zeroturnaround.process.Processes
 
 // Get executable file name based on OS
 String executableFileName = OSDetector.isWindows() ? "catalina.bat" : "catalina.sh";
@@ -44,6 +51,31 @@ subprojects {
 					String zipFileName = buildClientExtensionZipTask.archiveFileName.get()
 
 					"${gradle.liferayWorkspace.homeDir}/osgi/client-extensions/${zipFileName}"
+				}
+			}
+		}
+
+		tasks.withType(ExecuteAndWaitForTask) {
+			task ->
+			String name = task.name
+
+			String cleanTaskName = "clean" + name.charAt(0).toUpperCase() + name.substring(1)
+
+			tasks.named(cleanTaskName) {
+				doFirst {
+					if (!task.pid.isPresent()) {
+						return
+					}
+
+					PidProcess process = Processes.newPidProcess(task.pid.get());
+
+					if (!process.isAlive()) {
+						return
+					}
+
+					logger.lifecycle("Destroying background process with pid ${task.pid.get()}")
+
+					ProcessUtil.destroyGracefullyOrForcefullyAndWait(process, 30, TimeUnit.SECONDS, 10, TimeUnit.SECONDS)
 				}
 			}
 		}
