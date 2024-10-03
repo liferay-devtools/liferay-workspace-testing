@@ -35,6 +35,20 @@ Provider<File> tomcatDirProvider = tomcatBinDirProvider.map { it.parentFile }
 subprojects {
 	Project project ->
 
+	afterEvaluate {
+		def buildClientExtensionZipTask = tasks.findByName("buildClientExtensionZip")
+
+		if (buildClientExtensionZipTask != null) {
+			clean {
+				delete {
+					String zipFileName = buildClientExtensionZipTask.archiveFileName.get()
+
+					"${gradle.liferayWorkspace.homeDir}/osgi/client-extensions/${zipFileName}"
+				}
+			}
+		}
+	}
+
 	pluginManager.withPlugin('com.liferay.test.integration') {
 		dependencies {
 			/*
