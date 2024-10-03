@@ -1,0 +1,17 @@
+{
+	"author": "",
+	"description": "",
+	"devDependencies": {
+		"@playwright/test": "^1.44.0",
+		"@types/node": "^20.12.12"
+	},
+	"keywords": [
+	],
+	"license": "ISC",
+	"main": "index.js",
+	"name": "playwright",
+	"scripts": {
+		"test": "playwright install && playwright test --headed"
+	},
+	"version": "1.0.0"
+}
