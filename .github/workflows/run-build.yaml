@@ -1,5 +1,5 @@
 jobs:
-    run_build:
+    run_integration_tests:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -16,6 +16,23 @@ jobs:
               with:
                   name: test-reports
                   path: ./**/build/reports/tests/*
+    run_functional_tests:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+            - name: Set up JDK 8
+              uses: actions/setup-java@v3
+              with:
+                  distribution: "zulu"
+                  java-version: "8"
+            - name: run functional tests
+              run: ./run-functional-tests.sh
+            - name: Upload test reports
+              uses: actions/upload-artifact@v4
+              with:
+                  name: functional-test-reports
+                  path: ./**/playwright-report/*
 on:
     pull_request:
     workflow_dispatch:
