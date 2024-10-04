@@ -11,6 +11,8 @@ import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
 /**
@@ -47,29 +49,34 @@ public abstract class BaseServerTask extends DefaultTask {
 
 		serverStatusCheckIntervalProperty = objects.property(Integer.class);
 
-		serverStatusCheckIntervalProperty.set(1000);
+		serverStatusCheckIntervalProperty.convention(1000);
 
 		serverStatusCheckTimeoutProperty = objects.property(Integer.class);
 
-		serverStatusCheckTimeoutProperty.set(120000);
+		serverStatusCheckTimeoutProperty.convention(120000);
 	}
 
+	@Internal
 	public Provider<File> getBinDir() {
 		return binDirProvider;
 	}
 
+	@Internal
 	public Provider<File> getCatalinaPidFile() {
 		return catalinaPidFileProvider;
 	}
 
+	@Internal
 	public Provider<File> getExecutableFile() {
 		return executableFileProvider;
 	}
 
+	@Input
 	public Property<Integer> getServerStatusCheckInterval() {
 		return serverStatusCheckIntervalProperty;
 	}
 
+	@Input
 	public Property<Integer> getServerStatusCheckTimeout() {
 		return serverStatusCheckTimeoutProperty;
 	}
@@ -77,6 +84,7 @@ public abstract class BaseServerTask extends DefaultTask {
 	@TaskAction
 	public abstract void performServerAction() throws Exception;
 
+	@Internal
 	protected boolean isReachable() {
 		return ServerUtil.isReachable("http://localhost:8080");
 	}
