@@ -120,3 +120,5 @@ subprojects {
 		}
 	}
 }
+
+apply from: "set-up-tests-local.gradle"
