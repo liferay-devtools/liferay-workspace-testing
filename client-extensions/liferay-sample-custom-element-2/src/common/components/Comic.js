@@ -34,7 +34,7 @@ function Comic() {
 	return !comicData ? (
 		<div>Loading...</div>
 	) : (
-		<div id="custom-element-2-comic">
+		<div data-testid="custom-element-2-comic">
 			<h2>{comicData.title}</h2>
 
 			<p>

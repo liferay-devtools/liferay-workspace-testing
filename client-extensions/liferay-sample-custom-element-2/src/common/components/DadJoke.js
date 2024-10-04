@@ -37,7 +37,7 @@ function DadJoke() {
 		return <div>Loading...</div>;
 	}
 
-	return <div custom-element-2-joke>{joke}</div>;
+	return <div data-testid="custom-element-2-dad-joke">{joke}</div>;
 }
 
 export default DadJoke;
