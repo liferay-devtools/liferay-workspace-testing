@@ -31,6 +31,8 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.StartedProcess;
 import org.zeroturnaround.exec.listener.ProcessListener;
 import org.zeroturnaround.exec.stream.LogOutputStream;
+import org.zeroturnaround.process.PidProcess;
+import org.zeroturnaround.process.Processes;
 
 /**
  * @author Drew Brokke
@@ -74,7 +76,28 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 
 		_waitForTimeout.convention(30 * 1000);
 
-		onlyIf(task -> !_pid.isPresent());
+		onlyIf(
+			task -> {
+				if (!_pid.isPresent()) {
+					return true;
+				}
+
+				PidProcess process = Processes.newPidProcess(_pid.get());
+
+				try {
+					if (!process.isAlive()) {
+						return true;
+					}
+				}
+				catch (Exception exception) {
+					throw new GradleException(
+						"Could not check process with pid " + _pid.get(),
+						exception);
+				}
+
+				return false;
+			}
+		);
 	}
 
 	@Input
