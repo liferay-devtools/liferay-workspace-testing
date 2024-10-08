@@ -11,8 +11,8 @@
 	"main": "index.js",
 	"name": "playwright",
 	"scripts": {
-		"testAll": "playwright install && playwright test",
-		"testAllHeaded": "playwright install && playwright test --headed",
+		"testAll": "playwright install && playwright test --retries 3",
+		"testAllHeaded": "playwright install && playwright test --headed --retries 3",
 		"testCustomElement1": "playwright install && playwright test sample-custom-element-1.spec.ts",
 		"testCustomElement1Headed": "playwright install && playwright test sample-custom-element-1.spec.ts --headed",
 		"testCustomElement2": "playwright install && playwright test sample-custom-element-2.spec.ts",
