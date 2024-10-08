@@ -13,6 +13,7 @@ jobs:
               run: ./run-tests.sh
             - name: Upload test reports
               uses: actions/upload-artifact@v4
+              if: ${{ !cancelled() }}
               with:
                   name: test-reports
                   path: ./**/build/reports/tests/*
@@ -30,6 +31,7 @@ jobs:
               run: ./run-functional-tests.sh
             - name: Upload test reports
               uses: actions/upload-artifact@v4
+              if: ${{ !cancelled() }}
               with:
                   name: functional-test-reports
                   if-no-files-found: 'warn'
