@@ -11,13 +11,10 @@
 	"main": "index.js",
 	"name": "playwright",
 	"scripts": {
-		"pretestAll": "playwright install --with-deps",
-		"testAll": "playwright test --retries 3",
-		"testAllHeaded": "playwright test --headed --retries 3",
-		"testCustomElement1": "playwright install && playwright test sample-custom-element-1.spec.ts",
-		"testCustomElement1Headed": "playwright install && playwright test sample-custom-element-1.spec.ts --headed",
-		"testCustomElement2": "playwright install && playwright test sample-custom-element-2.spec.ts",
-		"testCustomElement2Headed": "playwright install && playwright test sample-custom-element-2.spec.ts --headed"
+		"testAll": "playwright install && playwright test --headed --retries 3",
+		"testAllHeadless": "playwright install --with-deps && playwright test --retries 3",
+		"testCustomElement1": "playwright install && playwright test sample-custom-element-1.spec.ts --headed",
+		"testCustomElement2": "playwright install && playwright test sample-custom-element-2.spec.ts --headed"
 	},
 	"version": "1.0.0"
 }
