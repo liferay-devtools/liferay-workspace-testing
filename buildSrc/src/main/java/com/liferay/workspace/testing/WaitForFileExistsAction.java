@@ -35,7 +35,7 @@ public class WaitForFileExistsAction implements Action<DefaultTask> {
 
 		Logger logger = defaultTask.getLogger();
 
-		logger.info("Waiting for file: ${file}");
+		logger.lifecycle("Waiting for file: {}", file);
 
 		try {
 			GradleUtil.waitFor(file::exists, _interval, _timeout);
@@ -43,7 +43,7 @@ public class WaitForFileExistsAction implements Action<DefaultTask> {
 			throw new GradleException("Could not find file: " + file, exception);
 		}
 
-		logger.info("Found file");
+		logger.lifecycle("Found file");
 	}
 
 	private static final int _DEFAULT_INTERVAL = 3 * 1000;
