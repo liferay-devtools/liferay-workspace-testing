@@ -4,6 +4,8 @@ import com.liferay.workspace.testing.ServerStopTask
 import com.liferay.workspace.testing.ServerUtil
 import com.liferay.workspace.testing.WaitForFileExistsAction
 
+String routesDir = "${gradle.liferayWorkspace.homeDir}/routes"
+
 tasks.register("serverStart", ServerStartTask)
 tasks.register("serverStop", ServerStopTask)
 
@@ -14,7 +16,7 @@ project(":client-extensions:liferay-sample-etc-node") {
         dependsOn "deploy"
         dependsOn ":serverStart"
 
-        doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
+        doFirst new WaitForFileExistsAction(provider {"${routesDir}/default/${project.name}"})
 
         execArgs.addAll rootProject.file("gradlew").path, "${project.path}:packageRunStart"
         expectedOutput.set "App listening on 3001"
@@ -32,7 +34,7 @@ project(":client-extensions:liferay-sample-etc-spring-boot") {
         dependsOn "deploy"
         dependsOn ":serverStart"
 
-        doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
+        doFirst new WaitForFileExistsAction(provider {"${routesDir}/default/${project.name}"})
 
         execArgs.addAll rootProject.file("gradlew").path, "${project.path}:bootRun"
         expectedOutput.set "Started SampleSpringBootApplication in"
@@ -56,17 +58,19 @@ tasks.register("tearDownDependencies") {
     dependsOn ":serverStop"
 }
 
+String functionalTestTaskName = "packageRunTestAllHeadless"
+
 project(":playwright").afterEvaluate {
     Project project ->
 
-    project.tasks.named("packageRunTestAllHeadless") {
-        mustRunAfter ":setUpDependencies"
-    }
+        project.tasks.named("${functionalTestTaskName}") {
+            mustRunAfter ":setUpDependencies"
+        }
 }
 
 tasks.register("runFunctionalTests") {
     dependsOn ":setUpDependencies"
-    dependsOn ":playwright:packageRunTestAllHeadless"
+    dependsOn ":playwright:${functionalTestTaskName}"
 
     finalizedBy ":tearDownDependencies"
 }
