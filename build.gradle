@@ -121,4 +121,8 @@ subprojects {
 	}
 }
 
-apply from: "set-up-tests-local.gradle"
+String defaultSetupProfile = "local"
+
+String setupProfile = findProperty("setupProfile") ?: defaultSetupProfile
+
+apply from: "set-up-tests-${setupProfile}.gradle"
