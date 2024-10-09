@@ -59,7 +59,7 @@ tasks.register("tearDownDependencies") {
 project(":playwright").afterEvaluate {
     Project project ->
 
-    project.tasks.named("packageRunTestAll") {
+    project.tasks.named("packageRunTestAllHeadless") {
         mustRunAfter ":setUpDependencies"
     }
 }
