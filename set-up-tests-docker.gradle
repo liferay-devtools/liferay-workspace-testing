@@ -1,0 +1,71 @@
+import com.liferay.workspace.testing.ServerUtil
+import com.liferay.workspace.testing.ExecuteAndWaitForTask
+import com.liferay.workspace.testing.WaitForFileExistsAction
+
+String routesDir = "${gradle.liferayWorkspace.homeDir}/routes"
+
+createDockerContainer {
+    hostConfig.binds.put routesDir, "/opt/liferay/routes"
+}
+
+project(":client-extensions:liferay-sample-etc-node") {
+    Project project ->
+
+        project.tasks.register('startMicroservice', ExecuteAndWaitForTask) {
+            dependsOn ":startDockerContainer"
+
+            doFirst new WaitForFileExistsAction(provider {"${routesDir}/default/${project.name}"})
+
+            execArgs.addAll rootProject.file("gradlew").path, "${project.path}:packageRunStart"
+            expectedOutput.set "App listening on 3001"
+
+            onlyIf {
+                !ServerUtil.isReachable("http://localhost:3001")
+            }
+        }
+}
+
+project(":client-extensions:liferay-sample-etc-spring-boot") {
+    Project project ->
+
+        project.tasks.register('startMicroservice', ExecuteAndWaitForTask) {
+            dependsOn ":startDockerContainer"
+
+            doFirst new WaitForFileExistsAction(provider {"${routesDir}/default/${project.name}"})
+
+            execArgs.addAll rootProject.file("gradlew").path, "${project.path}:bootRun"
+            expectedOutput.set "Started SampleSpringBootApplication in"
+
+            onlyIf {
+                !ServerUtil.isReachable("http://localhost:58081")
+            }
+        }
+}
+
+tasks.register("setUpDependencies") {
+    dependsOn ":client-extensions:liferay-sample-etc-node:startMicroservice"
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startMicroservice"
+}
+
+tasks.register("tearDownDependencies") {
+    dependsOn ":client-extensions:liferay-sample-etc-node:cleanStartMicroservice"
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:cleanStartMicroservice"
+    dependsOn ":stopDockerContainer"
+}
+
+String functionalTestTaskName = "packageRunTestAll"
+
+project(":playwright").afterEvaluate {
+    Project project ->
+
+        project.tasks.named("${functionalTestTaskName}") {
+            mustRunAfter ":setUpDependencies"
+        }
+}
+
+tasks.register("runFunctionalTests") {
+    dependsOn ":setUpDependencies"
+    dependsOn ":playwright:${functionalTestTaskName}"
+
+    finalizedBy ":tearDownDependencies"
+}
