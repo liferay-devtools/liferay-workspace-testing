@@ -8,10 +8,10 @@ composeUp {
     dependsOn ":client-extensions:liferay-sample-etc-spring-boot:buildDockerImage"
 }
 
-tasks.register("setUpDependencies") {
+tasks.named("setUpDependencies") {
     dependsOn ":composeUp"
 }
 
-tasks.register("tearDownDependencies") {
+tasks.named("tearDownDependencies") {
     dependsOn ":composeDown"
 }
