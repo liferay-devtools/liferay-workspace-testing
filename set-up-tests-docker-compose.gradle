@@ -1,11 +1,5 @@
-String dockerImageTag = "7.4.3.125-ga125"
-
 dockerCompose {
-    useComposeFiles = ['docker-compose-configs/docker-compose.yaml']
-
-    environment.put "liferayImage", "liferay-workspace-testing-liferay:7.4.3.125-ga125"
-    environment.put "microserviceNodeImage", "liferay-sample-etc-node:latest"
-    environment.put "microserviceSpringBootImage", "liferay-sample-etc-spring-boot:latest"
+    useComposeFiles = ['docker-compose.yaml']
 }
 
 composeUp {
@@ -14,10 +8,10 @@ composeUp {
     dependsOn ":client-extensions:liferay-sample-etc-spring-boot:buildDockerImage"
 }
 
-String functionalTestTaskName = "packageRunTestAll"
-
-tasks.register("runFunctionalTests") {
-    dependsOn ":playwright:${functionalTestTaskName}"
+tasks.register("setUpDependencies") {
+    dependsOn ":composeUp"
 }
 
-dockerCompose.isRequiredBy(tasks.named("runFunctionalTests"))
+tasks.register("tearDownDependencies") {
+    dependsOn ":composeDown"
+}

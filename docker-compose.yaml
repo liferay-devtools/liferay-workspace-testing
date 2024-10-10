@@ -1,0 +1,46 @@
+name: liferay-workspace-testing
+
+services:
+    liferay:
+        container_name: liferay-workspace-testing-liferay-portal
+        healthcheck:
+            interval: 5s
+            start_period: 2m
+            timeout: 5m
+            test: curl localhost:8080 && ls /opt/liferay/routes/default/liferay-sample-etc-node && ls /opt/liferay/routes/default/liferay-sample-etc-spring-boot
+        image: liferay-workspace-testing-liferay:7.4.3.125-ga125
+        network_mode: host
+        volumes:
+            - routes_dir:/opt/liferay/routes
+    microservice-node:
+        container_name: liferay-workspace-testing-microservice-node
+        depends_on:
+            liferay:
+                condition: service_healthy
+        environment:
+            - LIFERAY_ROUTES_CLIENT_EXTENSION=/etc/liferay/routes/default/liferay-sample-etc-node
+            - LIFERAY_ROUTES_DXP=/etc/liferay/routes/default/dxp
+        healthcheck:
+            test: curl localhost:3001
+        image: liferay-sample-etc-node:latest
+        network_mode: host
+        restart: unless-stopped
+        volumes:
+            - routes_dir:/etc/liferay/routes
+    microservice-spring-boot:
+        container_name: liferay-workspace-testing-microservice-spring-boot
+        depends_on:
+            liferay:
+                condition: service_healthy
+        environment:
+            - LIFERAY_ROUTES_CLIENT_EXTENSION=/etc/liferay/routes/default/liferay-sample-etc-spring-boot
+            - LIFERAY_ROUTES_DXP=/etc/liferay/routes/default/dxp
+        healthcheck:
+            test: curl localhost:58081
+        image: liferay-sample-etc-spring-boot:latest
+        network_mode: host
+        restart: unless-stopped
+        volumes:
+            - routes_dir:/etc/liferay/routes
+volumes:
+    routes_dir:

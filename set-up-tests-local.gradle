@@ -45,32 +45,15 @@ project(":client-extensions:liferay-sample-etc-spring-boot") {
     }
 }
 
-tasks.register("setUpDependencies") {
+tasks.named("setUpDependencies") {
     dependsOn ":client-extensions:liferay-sample-custom-element-1:deploy"
     dependsOn ":client-extensions:liferay-sample-custom-element-2:deploy"
     dependsOn ":client-extensions:liferay-sample-etc-node:startMicroservice"
     dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startMicroservice"
 }
 
-tasks.register("tearDownDependencies") {
+tasks.named("tearDownDependencies") {
     dependsOn ":client-extensions:liferay-sample-etc-node:cleanStartMicroservice"
     dependsOn ":client-extensions:liferay-sample-etc-spring-boot:cleanStartMicroservice"
     dependsOn ":serverStop"
-}
-
-String functionalTestTaskName = "packageRunTestAll"
-
-project(":playwright").afterEvaluate {
-    Project project ->
-
-        project.tasks.named("${functionalTestTaskName}") {
-            mustRunAfter ":setUpDependencies"
-        }
-}
-
-tasks.register("runFunctionalTests") {
-    dependsOn ":setUpDependencies"
-    dependsOn ":playwright:${functionalTestTaskName}"
-
-    finalizedBy ":tearDownDependencies"
 }
