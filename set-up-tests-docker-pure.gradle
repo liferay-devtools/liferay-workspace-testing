@@ -1,0 +1,137 @@
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.liferay.gradle.util.GradleUtil
+import com.liferay.workspace.testing.ServerUtil
+import com.liferay.workspace.testing.WaitForFileExistsAction
+
+String dockerRoutesDir = "/opt/liferay/routes"
+String localRoutesDir = "${gradle.liferayWorkspace.homeDir}/routes"
+String microserviceRoutesDir = "/etc/liferay/routes"
+
+String defaultVirtualHost = "192.168.215.1"
+
+createDockerContainer {
+    hostConfig.binds.put localRoutesDir, dockerRoutesDir
+
+    withEnvVar("LIFERAY_COMPANY_PERIOD_DEFAULT_PERIOD_VIRTUAL_PERIOD_HOST_PERIOD_NAME", defaultVirtualHost)
+}
+
+startDockerContainer {
+    doLast {
+        println "Waiting for server to be reachable"
+        GradleUtil.waitFor(
+                {ServerUtil.isReachable("http://localhost:8080")},
+                5 * 1000, 5 * 60 * 1000
+        )
+        println "reachable"
+    }
+}
+
+
+project(":client-extensions:liferay-sample-etc-node").afterEvaluate {
+    Project project ->
+
+    TaskProvider<DockerBuildImage> buildDockerImageTaskProvider = project.tasks.named("buildDockerImage") {
+        doLast {
+            println "MY IMAGE ID: ${imageId}"
+        }
+    }
+        
+    // tag the image
+
+    TaskProvider<DockerCreateContainer> createDockerContainerTaskProvider = project.tasks.register("createDockerContainer", DockerCreateContainer) {
+        containerId.set "${project.name}-container-id"
+        containerName.set "${project.name}-docker-container-name"
+        hostConfig.binds.put localRoutesDir, microserviceRoutesDir
+        withEnvVar("LIFERAY_ROUTES_CLIENT_EXTENSION", "${microserviceRoutesDir}/default/${project.name}")
+        withEnvVar("LIFERAY_ROUTES_DXP", "${microserviceRoutesDir}/default/dxp")
+
+
+        imageId.set buildDockerImageTaskProvider.flatMap {it.imageIdFile}.map { it.asFile}.map{it.text}
+
+        doLast {
+            println "IMAGE ID: ${imageId.get()}"
+        }
+    }
+
+    project.tasks.register("startDockerContainer", DockerStartContainer) {
+//        dependsOn ":startDockerContainer"
+        doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
+
+        targetContainerId createDockerContainerTaskProvider.flatMap {it.containerId}
+
+        onlyIf {
+            !ServerUtil.isReachable("http://localhost:3001")
+        }
+    }
+}
+
+project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
+    Project project ->
+
+        TaskProvider<DockerBuildImage> buildDockerImageTaskProvider = project.tasks.named("buildDockerImage") {
+            doLast {
+                println "MY IMAGE ID: ${imageId.get()}"
+            }
+        }
+
+        // tag the image
+
+        TaskProvider<DockerCreateContainer> createDockerContainerTaskProvider = project.tasks.register("createDockerContainer", DockerCreateContainer) {
+            containerId.set "${project.name}-container-id"
+            containerName.set "${project.name}-docker-container-name"
+
+            hostConfig.binds.put localRoutesDir, microserviceRoutesDir
+
+            hostConfig.portBindings.add "58081", "58081"
+
+            withEnvVar("LIFERAY_ROUTES_CLIENT_EXTENSION", "${microserviceRoutesDir}/default/${project.name}")
+            withEnvVar("LIFERAY_ROUTES_DXP", "${microserviceRoutesDir}/default/dxp")
+
+
+            imageId.set buildDockerImageTaskProvider.flatMap {it.imageIdFile}.map { it.asFile}.map{it.text}
+
+            doLast {
+                println "IMAGE ID: ${imageId.get()}"
+            }
+        }
+
+        project.tasks.register("startDockerContainer", DockerStartContainer) {
+//            dependsOn ":startDockerContainer"
+            dependsOn createDockerContainerTaskProvider
+            doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
+
+            targetContainerId createDockerContainerTaskProvider.flatMap {it.containerId}
+
+            onlyIf {
+            !ServerUtil.isReachable("http://localhost:58081")
+        }
+    }
+}
+
+tasks.register("setUpDependencies") {
+    dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
+}
+
+tasks.register("tearDownDependencies") {
+    dependsOn ":client-extensions:liferay-sample-etc-node:stopDockerContainer"
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:stopDockerContainer"
+    dependsOn ":stopDockerContainer"
+}
+
+project(":playwright").afterEvaluate {
+    Project project ->
+
+    project.tasks.named("packageRunTestAllHeadless") {
+        mustRunAfter ":setUpDependencies"
+    }
+}
+
+tasks.register("runFunctionalTests") {
+    dependsOn ":setUpDependencies"
+    dependsOn ":playwright:packageRunTestAllHeadless"
+
+    finalizedBy ":tearDownDependencies"
+}

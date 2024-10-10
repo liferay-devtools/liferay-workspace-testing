@@ -7,6 +7,10 @@ import org.zeroturnaround.process.PidProcess
 import org.zeroturnaround.process.ProcessUtil
 import org.zeroturnaround.process.Processes
 
+plugins {
+	id "com.avast.gradle.docker-compose" version "0.17.8"
+}
+
 // Get executable file name based on OS
 String executableFileName = OSDetector.isWindows() ? "catalina.bat" : "catalina.sh";
 
