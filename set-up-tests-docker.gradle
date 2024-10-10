@@ -1,54 +1,80 @@
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
+import com.liferay.gradle.util.GradleUtil
 import com.liferay.workspace.testing.ServerUtil
-import com.liferay.workspace.testing.ExecuteAndWaitForTask
 import com.liferay.workspace.testing.WaitForFileExistsAction
 
-String routesDir = "${gradle.liferayWorkspace.homeDir}/routes"
+String dockerRoutesDir = "/opt/liferay/routes"
+String localRoutesDir = "${gradle.liferayWorkspace.homeDir}/routes"
+String microserviceRoutesDir = "/etc/liferay/routes"
 
 createDockerContainer {
-    hostConfig.binds.put routesDir, "/opt/liferay/routes"
+    hostConfig.binds.put localRoutesDir, dockerRoutesDir
+    hostConfig.network.set "host"
 }
 
-project(":client-extensions:liferay-sample-etc-node") {
-    Project project ->
+startDockerContainer {
+    doLast {
+        println "Waiting for server to be reachable"
+        GradleUtil.waitFor(
+                {ServerUtil.isReachable("http://localhost:8080")},
+                5 * 1000, 5 * 60 * 1000
+        )
+        println "reachable"
+    }
+}
 
-        project.tasks.register('startMicroservice', ExecuteAndWaitForTask) {
+[
+    ":client-extensions:liferay-sample-etc-node",
+    ":client-extensions:liferay-sample-etc-spring-boot"
+].each {
+    String projectPath ->
+
+    project(projectPath).afterEvaluate {
+        Project project ->
+
+        TaskProvider<DockerCreateContainer> dockerCreateContainerTaskProvider = project.tasks.register("createDockerContainer", DockerCreateContainer) {
+            dependsOn "buildDockerImage"
+
+            containerId.set "${project.name}-container-id"
+            containerName.set "${project.name}-docker-container-name"
+
+            hostConfig.binds.put localRoutesDir, microserviceRoutesDir
+            hostConfig.network.set "host"
+
+            withEnvVar("LIFERAY_ROUTES_CLIENT_EXTENSION", "${microserviceRoutesDir}/default/${project.name}")
+            withEnvVar("LIFERAY_ROUTES_DXP", "${microserviceRoutesDir}/default/dxp")
+
+            imageId.set "${project.name}:latest"
+        }
+
+        project.tasks.register("startDockerContainer", DockerStartContainer) {
+            dependsOn "createDockerContainer"
             dependsOn ":startDockerContainer"
 
-            doFirst new WaitForFileExistsAction(provider {"${routesDir}/default/${project.name}"})
+            doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
 
-            execArgs.addAll rootProject.file("gradlew").path, "${project.path}:packageRunStart"
-            expectedOutput.set "App listening on 3001"
+            containerId.set dockerCreateContainerTaskProvider.flatMap {it.containerId}
 
             onlyIf {
                 !ServerUtil.isReachable("http://localhost:3001")
             }
         }
-}
 
-project(":client-extensions:liferay-sample-etc-spring-boot") {
-    Project project ->
-
-        project.tasks.register('startMicroservice', ExecuteAndWaitForTask) {
-            dependsOn ":startDockerContainer"
-
-            doFirst new WaitForFileExistsAction(provider {"${routesDir}/default/${project.name}"})
-
-            execArgs.addAll rootProject.file("gradlew").path, "${project.path}:bootRun"
-            expectedOutput.set "Started SampleSpringBootApplication in"
-
-            onlyIf {
-                !ServerUtil.isReachable("http://localhost:58081")
-            }
+        project.tasks.register("stopDockerContainer", DockerStopContainer) {
+            containerId.set dockerCreateContainerTaskProvider.flatMap {it.containerId}
         }
+    }
 }
 
 tasks.named("setUpDependencies") {
-    dependsOn ":client-extensions:liferay-sample-etc-node:startMicroservice"
-    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startMicroservice"
+    dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
 }
 
 tasks.named("tearDownDependencies") {
-    dependsOn ":client-extensions:liferay-sample-etc-node:cleanStartMicroservice"
-    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:cleanStartMicroservice"
+    dependsOn ":client-extensions:liferay-sample-etc-node:stopDockerContainer"
+    dependsOn ":client-extensions:liferay-sample-etc-spring-boot:stopDockerContainer"
     dependsOn ":stopDockerContainer"
 }
