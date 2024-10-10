@@ -36,7 +36,7 @@ jobs:
               uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
               with:
-                  name: functional-test-reports
+                  name: functional-test-reports-${{ matrix.setupProfile }}
                   if-no-files-found: 'warn'
                   include-hidden-files: 'true'
                   path: |
