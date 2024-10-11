@@ -1,3 +1,12 @@
-./gradlew initBundle
+setupProfile="${1-local}"
 
-./gradlew runFunctionalTests --info
+echo "Running functional tests with the '${setupProfile}' profile"
+
+if [[ "${setupProfile}" = "local" ]]
+then
+  echo "Running initBundle"
+
+  ./gradlew initBundle
+fi
+
+./gradlew runFunctionalTests -PsetupProfile="${setupProfile}" --info
