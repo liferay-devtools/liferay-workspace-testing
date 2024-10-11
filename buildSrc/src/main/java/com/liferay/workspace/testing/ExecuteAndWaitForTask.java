@@ -64,11 +64,12 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 					return Integer.parseInt(
 						new String(Files.readAllBytes(pidFile.toPath())));
 				}
-				catch (IOException e) {
-					throw new RuntimeException(e);
+				catch (IOException | NumberFormatException exception) {
+					throw new RuntimeException(exception);
 				}
 			}
 		);
+
 		_stdoutFile = buildDirectory.file(
 			String.format("%s/stdout.txt", getName()));
 		_expectedOutput = objects.property(String.class);
@@ -98,8 +99,7 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 				}
 
 				return false;
-			}
-		);
+			});
 	}
 
 	@Input
@@ -138,7 +138,6 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 		File stdoutFile = _stdoutFile.map(
 			RegularFile::getAsFile
 		).get();
-		Duration timeout = _waitForTimeout.get();
 
 		ProcessExecutor processExecutor = new ProcessExecutor(_execArgs.get());
 
@@ -184,6 +183,8 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 		Process process = startedProcess.getProcess();
 
 		if (_expectedOutput.isPresent()) {
+			Duration timeout = _waitForTimeout.get();
+
 			System.out.printf(
 				"Waiting for expected output: %s%n", _expectedOutput.get());
 
