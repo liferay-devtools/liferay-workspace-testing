@@ -54,6 +54,11 @@ startDockerContainer {
             dependsOn ":startDockerContainer"
 
             doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
+            doFirst {
+                println("DEBUG ${project.name}: Artificial wait for debugging....")
+                sleep(30 * 1000)
+                println("DEBUG ${project.name}: Ok starting now...")
+            }
 
             containerId.set dockerCreateContainerTaskProvider.flatMap {it.containerId}
         }
