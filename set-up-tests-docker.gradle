@@ -56,10 +56,6 @@ startDockerContainer {
             doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
 
             containerId.set dockerCreateContainerTaskProvider.flatMap {it.containerId}
-
-            onlyIf {
-                !ServerUtil.isReachable("http://localhost:3001")
-            }
         }
 
         project.tasks.register("stopDockerContainer", DockerStopContainer) {
