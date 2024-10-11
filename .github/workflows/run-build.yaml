@@ -20,7 +20,7 @@ jobs:
     run_functional_tests:
         strategy:
             matrix:
-                setupProfile: [local, docker]
+                setupProfile: [local, docker, docker-compose]
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
