@@ -1,5 +1,9 @@
 import com.liferay.gradle.util.OSDetector
 
+plugins {
+	id "com.avast.gradle.docker-compose" version "0.17.8"
+}
+
 // Get executable file name based on OS
 String executableFileName = OSDetector.isWindows() ? "catalina.bat" : "catalina.sh";
 

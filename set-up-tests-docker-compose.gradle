@@ -1,0 +1,17 @@
+dockerCompose {
+	useComposeFiles = ['docker-compose.yaml']
+}
+
+composeUp {
+	dependsOn ":buildDockerImage"
+	dependsOn ":client-extensions:liferay-sample-etc-node:buildDockerImage"
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:buildDockerImage"
+}
+
+tasks.named("setUpDependencies") {
+	dependsOn ":composeUp"
+}
+
+tasks.named("tearDownDependencies") {
+	dependsOn ":composeDown"
+}
