@@ -4,6 +4,7 @@ import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
 
 import java.io.File;
+import java.time.Duration;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
@@ -47,13 +48,13 @@ public abstract class BaseServerTask extends DefaultTask {
 
 		ObjectFactory objects = project.getObjects();
 
-		serverStatusCheckIntervalProperty = objects.property(Integer.class);
+		serverStatusCheckIntervalProperty = objects.property(Duration.class);
 
-		serverStatusCheckIntervalProperty.convention(1000);
+		serverStatusCheckIntervalProperty.convention(Duration.ofSeconds(2));
 
-		serverStatusCheckTimeoutProperty = objects.property(Integer.class);
+		serverStatusCheckTimeoutProperty = objects.property(Duration.class);
 
-		serverStatusCheckTimeoutProperty.convention(120000);
+		serverStatusCheckTimeoutProperty.convention(Duration.ofMinutes(5));
 	}
 
 	@Internal
@@ -72,12 +73,12 @@ public abstract class BaseServerTask extends DefaultTask {
 	}
 
 	@Input
-	public Property<Integer> getServerStatusCheckInterval() {
+	public Property<Duration> getServerStatusCheckInterval() {
 		return serverStatusCheckIntervalProperty;
 	}
 
 	@Input
-	public Property<Integer> getServerStatusCheckTimeout() {
+	public Property<Duration> getServerStatusCheckTimeout() {
 		return serverStatusCheckTimeoutProperty;
 	}
 
@@ -92,7 +93,7 @@ public abstract class BaseServerTask extends DefaultTask {
 	protected final Provider<File> binDirProvider;
 	protected final Provider<File> catalinaPidFileProvider;
 	protected final Provider<File> executableFileProvider;
-	protected final Property<Integer> serverStatusCheckIntervalProperty;
-	protected final Property<Integer> serverStatusCheckTimeoutProperty;
+	protected final Property<Duration> serverStatusCheckIntervalProperty;
+	protected final Property<Duration> serverStatusCheckTimeoutProperty;
 
 }
