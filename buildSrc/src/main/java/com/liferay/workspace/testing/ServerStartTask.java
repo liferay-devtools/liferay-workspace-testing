@@ -2,6 +2,8 @@ package com.liferay.workspace.testing;
 
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
 
+import java.time.Duration;
+
 import java.util.Collections;
 
 import org.gradle.api.Project;
@@ -34,9 +36,11 @@ public class ServerStartTask extends BaseServerTask {
 
 		System.out.println("Trying to reach server...");
 
+		Duration interval = serverStatusCheckIntervalProperty.get();
+		Duration timeout = serverStatusCheckTimeoutProperty.get();
+
 		GradleUtil.waitFor(
-			this::isReachable, serverStatusCheckIntervalProperty.get(),
-			serverStatusCheckTimeoutProperty.get());
+			this::isReachable, interval.toMillis(), timeout.toMillis());
 
 		System.out.println("Success!");
 	}

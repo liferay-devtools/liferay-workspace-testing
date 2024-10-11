@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 
 import java.nio.file.Files;
 
+import java.time.Duration;
+
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -72,9 +74,9 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 		_expectedOutput = objects.property(String.class);
 		_execArgs = objects.setProperty(String.class);
 
-		_waitForTimeout = objects.property(Integer.class);
+		_waitForTimeout = objects.property(Duration.class);
 
-		_waitForTimeout.convention(30 * 1000);
+		_waitForTimeout.convention(Duration.ofSeconds(30));
 
 		onlyIf(
 			task -> {
@@ -127,7 +129,7 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 	}
 
 	@Input
-	public Property<Integer> getWaitForTimeout() {
+	public Property<Duration> getWaitForTimeout() {
 		return _waitForTimeout;
 	}
 
@@ -136,7 +138,7 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 		File stdoutFile = _stdoutFile.map(
 			RegularFile::getAsFile
 		).get();
-		Integer timeout = _waitForTimeout.get();
+		Duration timeout = _waitForTimeout.get();
 
 		ProcessExecutor processExecutor = new ProcessExecutor(_execArgs.get());
 
@@ -186,7 +188,7 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 				"Waiting for expected output: %s%n", _expectedOutput.get());
 
 			boolean await = countDownLatch.await(
-				timeout, TimeUnit.MILLISECONDS);
+				timeout.toMillis(), TimeUnit.MILLISECONDS);
 
 			if (!await) {
 				if (process.isAlive()) {
@@ -223,6 +225,6 @@ public class ExecuteAndWaitForTask extends DefaultTask {
 	private final Provider<Integer> _pid;
 	private final Provider<RegularFile> _pidFile;
 	private final Provider<RegularFile> _stdoutFile;
-	private final Property<Integer> _waitForTimeout;
+	private final Property<Duration> _waitForTimeout;
 
 }

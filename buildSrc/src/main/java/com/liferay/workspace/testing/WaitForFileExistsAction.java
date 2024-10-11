@@ -1,14 +1,17 @@
 package com.liferay.workspace.testing;
 
 import com.liferay.gradle.util.GradleUtil;
+
+import java.io.File;
+
+import java.time.Duration;
+
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Provider;
-
-import java.io.File;
 
 /**
  * @author Drew Brokke
@@ -20,7 +23,7 @@ public class WaitForFileExistsAction implements Action<DefaultTask> {
 	}
 
 	public WaitForFileExistsAction(
-			Provider<Object> fileProvider, int interval, int timeout) {
+		Provider<Object> fileProvider, Duration interval, Duration timeout) {
 
 		_fileProvider = fileProvider;
 		_interval = interval;
@@ -46,11 +49,12 @@ public class WaitForFileExistsAction implements Action<DefaultTask> {
 		logger.lifecycle("Found file");
 	}
 
-	private static final int _DEFAULT_INTERVAL = 3 * 1000;
-	private static final int _DEFAULT_TIMEOUT = 2 * 60 * 1000;
+	private static final Duration _DEFAULT_INTERVAL = Duration.ofSeconds(3);
 
-	private final int _interval;
+	private static final Duration _DEFAULT_TIMEOUT = Duration.ofMinutes(2);
+
 	private final Provider<Object> _fileProvider;
-	private final int _timeout;
+	private final Duration _interval;
+	private final Duration _timeout;
 
 }
