@@ -41,9 +41,15 @@ public class WaitForFileExistsAction implements Action<DefaultTask> {
 		logger.lifecycle("Waiting for file: {}", file);
 
 		try {
-			GradleUtil.waitFor(file::exists, _interval, _timeout);
-		} catch (Exception exception) {
-			throw new GradleException("Could not find file: " + file, exception);
+			if (!GradleUtil.waitFor(
+					file::exists, _interval.toMillis(), _timeout.toMillis())) {
+
+				throw new GradleException("Could not find file: " + file);
+			}
+		}
+		catch (Exception exception) {
+			throw new GradleException(
+				"Could not find file: " + file, exception);
 		}
 
 		logger.lifecycle("Found file");

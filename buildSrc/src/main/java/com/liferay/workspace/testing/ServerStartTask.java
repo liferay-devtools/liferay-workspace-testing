@@ -6,6 +6,7 @@ import java.time.Duration;
 
 import java.util.Collections;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 /**
@@ -39,8 +40,11 @@ public class ServerStartTask extends BaseServerTask {
 		Duration interval = serverStatusCheckIntervalProperty.get();
 		Duration timeout = serverStatusCheckTimeoutProperty.get();
 
-		GradleUtil.waitFor(
-			this::isReachable, interval.toMillis(), timeout.toMillis());
+		if (!GradleUtil.waitFor(
+				this::isReachable, interval.toMillis(), timeout.toMillis())) {
+
+			throw new GradleException("Could not reach server in time");
+		}
 
 		System.out.println("Success!");
 	}
