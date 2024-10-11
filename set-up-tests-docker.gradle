@@ -1,36 +1,70 @@
 import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerExistingContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
 import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
+import com.github.dockerjava.api.DockerClient
+import com.github.dockerjava.api.command.InspectContainerCmd
+import com.github.dockerjava.api.command.InspectContainerResponse
 import com.liferay.gradle.util.GradleUtil
-import com.liferay.workspace.testing.ServerUtil
-import com.liferay.workspace.testing.WaitForFileExistsAction
+
+import java.time.Duration
 
 String dockerRoutesDir = "/opt/liferay/routes"
 String localRoutesDir = "${gradle.liferayWorkspace.homeDir}/routes"
 String microserviceRoutesDir = "/etc/liferay/routes"
 
+Duration interval = Duration.ofSeconds(5)
+Duration timeout = Duration.ofMinutes(5)
+
+class WaitForHealthyAction implements Action<DockerExistingContainer> {
+    private final Duration _interval
+    private final Duration _timeout
+
+    WaitForHealthyAction(Duration interval, Duration timeout) {
+        _interval = interval
+        _timeout = timeout
+    }
+
+    @Override
+    void execute(DockerExistingContainer dockerExistingContainer) {
+        DockerClient dockerClient = dockerExistingContainer.dockerClient
+
+        println("Task ${dockerExistingContainer.path} waiting for healthy...")
+
+        if (!GradleUtil.waitFor(
+                {
+                    InspectContainerCmd inspectContainerCmd = dockerClient.inspectContainerCmd(dockerExistingContainer.containerId.get())
+
+                    InspectContainerResponse inspectContainerResponse = inspectContainerCmd.exec()
+
+                    String status = inspectContainerResponse.state.health.status
+
+                    println status
+
+                    status == "healthy"
+                },
+                _interval.toMillis(),
+                _timeout.toMillis()
+        )) {
+            throw new GradleException("Did not find healthy state in time!")
+        }
+        println("Task ${dockerExistingContainer.path} is healthy!")
+    }
+}
 createDockerContainer {
+    healthCheck.cmd "curl localhost:8080 && ls /opt/liferay/routes/default/liferay-sample-etc-node && ls /opt/liferay/routes/default/liferay-sample-etc-spring-boot"
+    healthCheck.interval.set Duration.ofSeconds(5).toNanos()
+    healthCheck.startPeriod.set Duration.ofMinutes(2).toNanos()
+    healthCheck.timeout.set Duration.ofMinutes(5).toNanos()
+
     hostConfig.binds.put localRoutesDir, dockerRoutesDir
     hostConfig.network.set "host"
 }
-
 startDockerContainer {
-    doLast {
-        println "Waiting for server to be reachable"
-        if (!GradleUtil.waitFor(
-                {ServerUtil.isReachable("http://localhost:8080")},
-                5 * 1000, 5 * 60 * 1000
-        )) {
-            throw new GradleException("Could not reach server in time")
-        }
-        println "reachable"
-    }
+    doLast new WaitForHealthyAction(interval, timeout)
 }
 
-[
-    ":client-extensions:liferay-sample-etc-node",
-    ":client-extensions:liferay-sample-etc-spring-boot"
-].each {
+[":client-extensions:liferay-sample-etc-node", ":client-extensions:liferay-sample-etc-spring-boot"].each {
     String projectPath ->
 
     project(projectPath).afterEvaluate {
@@ -55,19 +89,29 @@ startDockerContainer {
             dependsOn "createDockerContainer"
             dependsOn ":startDockerContainer"
 
-            doFirst new WaitForFileExistsAction(provider {"${localRoutesDir}/default/${project.name}"})
-            doFirst {
-                println("DEBUG ${project.name}: Artificial wait for debugging....")
-                sleep(30 * 1000)
-                println("DEBUG ${project.name}: Ok starting now...")
-            }
-
             containerId.set dockerCreateContainerTaskProvider.flatMap {it.containerId}
+
+            doLast new WaitForHealthyAction(interval, timeout)
         }
 
         project.tasks.register("stopDockerContainer", DockerStopContainer) {
             containerId.set dockerCreateContainerTaskProvider.flatMap {it.containerId}
         }
+    }
+}
+
+project(":client-extensions:liferay-sample-etc-node").afterEvaluate {
+    Project project ->
+
+    project.tasks.named("createDockerContainer", DockerCreateContainer) {
+        healthCheck.cmd "curl localhost:3001"
+    }
+}
+project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
+    Project project ->
+
+    project.tasks.named("createDockerContainer", DockerCreateContainer) {
+        healthCheck.cmd "curl localhost:58081"
     }
 }
 
