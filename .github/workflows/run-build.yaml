@@ -42,6 +42,9 @@ jobs:
                   path: |
                     playwright/playwright-report
                     playwright/test-results
+            - name: Print files on failure
+              if: ${{ failure() }}
+              run: find . -type f -not -path '*/node_modules*/*' -not -path '*/.idea/*' -not -path '*/.git/*' -not -path '*/build/*' -not -path '*/.gradle/*'
 on:
     pull_request:
     workflow_dispatch:
