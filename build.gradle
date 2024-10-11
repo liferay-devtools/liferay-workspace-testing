@@ -35,9 +35,13 @@ Provider<File> tomcatExecutableFileProvider = provider {
 	executableFilesFileTree.singleFile
 }
 
-Provider<File> tomcatBinDirProvider = tomcatExecutableFileProvider.map { it.parentFile }
+Provider<File> tomcatBinDirProvider = tomcatExecutableFileProvider.map {
+	it.parentFile
+}
 
-Provider<File> tomcatDirProvider = tomcatBinDirProvider.map { it.parentFile }
+Provider<File> tomcatDirProvider = tomcatBinDirProvider.map {
+	it.parentFile
+}
 
 subprojects {
 	Project project ->
