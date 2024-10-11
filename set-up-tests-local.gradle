@@ -4,6 +4,12 @@ import com.liferay.workspace.testing.ServerStopTask
 import com.liferay.workspace.testing.ServerUtil
 import com.liferay.workspace.testing.WaitForFileExistsAction
 
+import java.util.concurrent.TimeUnit;
+
+import org.zeroturnaround.process.PidProcess
+import org.zeroturnaround.process.ProcessUtil
+import org.zeroturnaround.process.Processes
+
 tasks.register("serverStart", ServerStartTask)
 tasks.register("serverStop", ServerStopTask)
 
@@ -39,6 +45,38 @@ project(":client-extensions:liferay-sample-etc-spring-boot") {
 
 		onlyIf {
 			!ServerUtil.isReachable("http://localhost:58081")
+		}
+	}
+}
+
+subprojects {
+	Project project ->
+
+	afterEvaluate {
+		tasks.withType(ExecuteAndWaitForTask) {
+			task ->
+
+			String name = task.name
+
+			String cleanTaskName = "clean" + name.charAt(0).toUpperCase() + name.substring(1)
+
+			tasks.named(cleanTaskName) {
+				doFirst {
+					if (!task.pid.isPresent()) {
+						return
+					}
+
+					PidProcess process = Processes.newPidProcess(task.pid.get());
+
+					if (!process.isAlive()) {
+						return
+					}
+
+					logger.lifecycle("Destroying background process with pid ${task.pid.get()}")
+
+					ProcessUtil.destroyGracefullyOrForcefullyAndWait(process, 30, TimeUnit.SECONDS, 10, TimeUnit.SECONDS)
+				}
+			}
 		}
 	}
 }
