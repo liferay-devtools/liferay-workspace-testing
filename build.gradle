@@ -121,4 +121,28 @@ subprojects {
 	}
 }
 
-apply from: "set-up-tests-local.gradle"
+// Declare set up and tear down tasks for functional tests
+
+tasks.register("setUpDependencies")
+tasks.register("tearDownDependencies")
+
+String functionalTestTaskName = "packageRunTestAllHeadless"
+
+project(":playwright").afterEvaluate {
+	Project project ->
+
+	project.tasks.named("${functionalTestTaskName}") {
+		mustRunAfter ":setUpDependencies"
+	}
+}
+
+tasks.register("runFunctionalTests") {
+	dependsOn ":setUpDependencies"
+	dependsOn ":playwright:${functionalTestTaskName}"
+
+	finalizedBy ":tearDownDependencies"
+}
+
+String setupProfile = findProperty("setupProfile") ?: "local"
+
+apply from: "set-up-tests-${setupProfile}.gradle"
