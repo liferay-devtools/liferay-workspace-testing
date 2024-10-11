@@ -72,8 +72,8 @@ startDockerContainer {
 }
 
 tasks.named("setUpDependencies") {
-    dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
     dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
+    dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
 }
 
 tasks.named("tearDownDependencies") {
