@@ -1,0 +1,93 @@
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
+
+import com.liferay.workspace.testing.WaitForHealthyAction
+
+import java.time.Duration
+
+String liferayRoutesDir = "/opt/liferay/routes"
+String microserviceRoutesDir = "/etc/liferay/routes"
+
+Duration interval = Duration.ofSeconds(5)
+Duration timeout = Duration.ofMinutes(5)
+
+createDockerContainer {
+	healthCheck.cmd "curl localhost:8080 && ls ${liferayRoutesDir}/default/liferay-sample-etc-node && ls ${liferayRoutesDir}/default/liferay-sample-etc-spring-boot"
+	healthCheck.interval.set interval.toNanos()
+	healthCheck.startPeriod.set Duration.ofMinutes(2).toNanos()
+	healthCheck.timeout.set timeout.toNanos()
+
+	hostConfig.binds.put "routes", liferayRoutesDir
+	hostConfig.network.set "host"
+}
+
+startDockerContainer {
+	doLast new WaitForHealthyAction(interval, timeout)
+}
+
+[":client-extensions:liferay-sample-etc-node", ":client-extensions:liferay-sample-etc-spring-boot"].each {
+	String projectPath ->
+
+	project(projectPath).afterEvaluate {
+		Project project ->
+
+		TaskProvider<DockerCreateContainer> dockerCreateContainerTaskProvider = project.tasks.register("createDockerContainer", DockerCreateContainer) {
+			dependsOn "buildDockerImage"
+
+			containerId.set "${project.name}-container-id"
+			containerName.set "${project.name}-docker-container-name"
+
+			hostConfig.binds.put "routes", microserviceRoutesDir
+			hostConfig.network.set "host"
+
+			withEnvVar("LIFERAY_ROUTES_CLIENT_EXTENSION", "${microserviceRoutesDir}/default/${project.name}")
+			withEnvVar("LIFERAY_ROUTES_DXP", "${microserviceRoutesDir}/default/dxp")
+
+			imageId.set "${project.name}:latest"
+		}
+
+		Provider<String> containerIdProvider = dockerCreateContainerTaskProvider.flatMap {
+			it.containerId
+		}
+
+		project.tasks.register("startDockerContainer", DockerStartContainer) {
+			dependsOn "createDockerContainer"
+			dependsOn ":startDockerContainer"
+
+			containerId.set containerIdProvider
+
+			doLast new WaitForHealthyAction(interval, timeout)
+		}
+
+		project.tasks.register("stopDockerContainer", DockerStopContainer) {
+			containerId.set containerIdProvider
+		}
+	}
+}
+
+project(":client-extensions:liferay-sample-etc-node").afterEvaluate {
+	Project project ->
+
+	project.tasks.named("createDockerContainer", DockerCreateContainer) {
+		healthCheck.cmd "curl localhost:3001"
+	}
+}
+project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
+	Project project ->
+
+	project.tasks.named("createDockerContainer", DockerCreateContainer) {
+		healthCheck.cmd "curl localhost:58081"
+	}
+}
+
+tasks.named("setUpDependencies") {
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
+	dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
+}
+
+tasks.named("tearDownDependencies") {
+	dependsOn ":client-extensions:liferay-sample-etc-node:stopDockerContainer"
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:stopDockerContainer"
+	dependsOn ":stopDockerContainer"
+}
