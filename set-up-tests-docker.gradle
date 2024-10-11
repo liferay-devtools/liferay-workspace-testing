@@ -10,7 +10,6 @@ import com.liferay.gradle.util.GradleUtil
 import java.time.Duration
 
 String dockerRoutesDir = "/opt/liferay/routes"
-String localRoutesDir = "${gradle.liferayWorkspace.homeDir}/routes"
 String microserviceRoutesDir = "/etc/liferay/routes"
 
 Duration interval = Duration.ofSeconds(5)
@@ -57,8 +56,10 @@ createDockerContainer {
     healthCheck.startPeriod.set Duration.ofMinutes(2).toNanos()
     healthCheck.timeout.set Duration.ofMinutes(5).toNanos()
 
-    hostConfig.binds.put localRoutesDir, dockerRoutesDir
+    hostConfig.binds.put "routes", dockerRoutesDir
     hostConfig.network.set "host"
+
+    volumes.add "routes"
 }
 startDockerContainer {
     doLast new WaitForHealthyAction(interval, timeout)
@@ -76,8 +77,10 @@ startDockerContainer {
             containerId.set "${project.name}-container-id"
             containerName.set "${project.name}-docker-container-name"
 
-            hostConfig.binds.put localRoutesDir, microserviceRoutesDir
+            hostConfig.binds.put "routes", microserviceRoutesDir
             hostConfig.network.set "host"
+
+            volumes.add "routes"
 
             withEnvVar("LIFERAY_ROUTES_CLIENT_EXTENSION", "${microserviceRoutesDir}/default/${project.name}")
             withEnvVar("LIFERAY_ROUTES_DXP", "${microserviceRoutesDir}/default/dxp")
