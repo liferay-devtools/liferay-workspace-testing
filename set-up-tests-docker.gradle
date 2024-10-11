@@ -17,10 +17,12 @@ createDockerContainer {
 startDockerContainer {
     doLast {
         println "Waiting for server to be reachable"
-        GradleUtil.waitFor(
+        if (!GradleUtil.waitFor(
                 {ServerUtil.isReachable("http://localhost:8080")},
                 5 * 1000, 5 * 60 * 1000
-        )
+        )) {
+            throw new GradleException("Could not reach server in time")
+        }
         println "reachable"
     }
 }
@@ -53,7 +55,7 @@ startDockerContainer {
             dependsOn "createDockerContainer"
             dependsOn ":startDockerContainer"
 
-            doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
+            doFirst new WaitForFileExistsAction(provider {"${localRoutesDir}/default/${project.name}"})
             doFirst {
                 println("DEBUG ${project.name}: Artificial wait for debugging....")
                 sleep(30 * 1000)
