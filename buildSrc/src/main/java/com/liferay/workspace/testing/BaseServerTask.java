@@ -51,11 +51,11 @@ public abstract class BaseServerTask extends DefaultTask {
 
 		serverStatusCheckIntervalProperty = objects.property(Duration.class);
 
-		serverStatusCheckIntervalProperty.convention(Duration.ofSeconds(2));
+		serverStatusCheckIntervalProperty.convention(Duration.ofSeconds(5));
 
 		serverStatusCheckTimeoutProperty = objects.property(Duration.class);
 
-		serverStatusCheckTimeoutProperty.convention(Duration.ofMinutes(2));
+		serverStatusCheckTimeoutProperty.convention(Duration.ofMinutes(5));
 	}
 
 	@Internal
