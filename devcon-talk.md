@@ -63,5 +63,18 @@
 8. stop the microservices
 9. undeploy or stop liferay
 
-## Demo
+- automating the setup/teardown + functional tests
+1. automate the setup with gradle
+2. gradle task to run your tests (we are gonna use playwright)
+3. Btw if you have a package.json, all the scripts because a gradle task that you can execute or orchestrate
+4. teardown with gradle
+
+- Some interesting code
+1. server start like this (point to code) (show video demo)
+2. dependencies (and extensions) deployed here (point to code) (show video demo)
+3. checking for the Routes folder (things from DXP that are needed by your CX) (point to code) (show video demo)
+4. orchestrating the starting of CX (point to code)
+5. waiting for the CX to be ready (point to code)
+6. then show where we execute functional tests after all of that is ready (point to code)
+7. teardown, show the gradle finalizers or stopping liferay
 
