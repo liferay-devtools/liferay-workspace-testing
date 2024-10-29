@@ -27,18 +27,16 @@ pipeline {
 			}
 		}
 
-		stage("Unit Tests") {
+		stage("Tests") {
 			steps {
 				script {
 					try {
 						if (isUnix()) {
-							sh(script: "./gradlew clean test --console=plain --no-daemon")
+							sh(script: "./gradlew clean build --console=plain --info --no-daemon")
 						}
 						else {
-							bat(script: "./gradlew clean test --console=plain --no-daemon")
+							bat(script: "./gradlew clean build --console=plain --info --no-daemon")
 						}
-
-						junit "**/build/test-results/test/*.xml"
 					}
 					catch (Exception exception) {
 						echo "Exception: " + exception.toString()
@@ -50,15 +48,15 @@ pipeline {
 			}
 		}
 
-		stage("Integration Tests") {
+		stage("Functional Tests") {
 			steps {
 				script {
 					try {
 						if (isUnix()) {
-							sh(script: "./gradlew clean testIntegration --console=plain --no-daemon")
+							sh(script: './gradlew clean runFunctionalTests -PsetupProfile="local" --console=plain --info --no-daemon')
 						}
 						else {
-							bat(script: "./gradlew clean testIntegration --console=plain --no-daemon")
+							bat(script: './gradlew clean runFunctionalTests -PsetupProfile="local" --console=plain --info --no-daemon')
 						}
 					}
 					catch (Exception exception) {
@@ -66,27 +64,6 @@ pipeline {
 					}
 					finally {
 						echo "Ran Integration Tests"
-					}
-				}
-			}
-		}
-
-		stage("Playwright Tests") {
-			steps {
-				script {
-					try {
-						if (isUnix()) {
-							sh(script: "./gradlew clean :playwright:packageRunTestAll --console=plain --no-daemon")
-						}
-						else {
-							bat(script: "./gradlew clean :playwright:packageRunTestAll --console=plain --no-daemon")
-						}
-					}
-					catch (Exception exception) {
-						echo "Exception: " + exception.toString()
-					}
-					finally {
-						echo "Ran Playwright Tests"
 					}
 				}
 			}
