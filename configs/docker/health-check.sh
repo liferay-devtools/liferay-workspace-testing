@@ -18,19 +18,20 @@ then
 	exit 1
 fi
 
-_log "Waiting for routes for liferay-sample-etc-node..."
-if ! ls /opt/liferay/routes/default/liferay-sample-etc-node
-then
-	_log "Routes not ready for liferay-sample-etc-node"
-	exit 1
-fi
+route_folders=(
+	liferay-sample-etc-node
+	liferay-sample-etc-spring-boot
+)
 
-_log "Waiting for routes for liferay-sample-etc-spring-boot..."
-if ! ls /opt/liferay/routes/default/liferay-sample-etc-spring-boot
-then
-	_log "Routes not ready for liferay-sample-etc-spring-boot"
-	exit 1
-fi
+for route_folder in "${route_folders[@]}"
+do
+	_log "Waiting for routes for ${route_folder}..."
+	if ! ls /opt/liferay/routes/default/${route_folder}
+	then
+		_log "Routes not ready for ${route_folder}"
+		exit 1
+	fi
+done
 
 _log "Ready!"
 exit 0
