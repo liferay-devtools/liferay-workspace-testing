@@ -43,6 +43,14 @@ Provider<File> tomcatDirProvider = tomcatBinDirProvider.map {
 subprojects {
 	Project project ->
 
+	pluginManager.withPlugin('java') {
+		java {
+			toolchain {
+				languageVersion = JavaLanguageVersion.of(11)
+			}
+		}
+	}
+
 	pluginManager.withPlugin('com.liferay.test.integration') {
 		dependencies {
 			/*
