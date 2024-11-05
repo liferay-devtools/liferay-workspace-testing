@@ -5,7 +5,7 @@ services:
         healthcheck:
             interval: 5s
             start_period: 2m
-            test: curl localhost:8080 && ls /opt/liferay/routes/default/liferay-sample-etc-node && ls /opt/liferay/routes/default/liferay-sample-etc-spring-boot
+            test: "/opt/liferay/health-check.sh"
             timeout: 5m
         image: liferay-workspace-testing-liferay:7.4.3.125-ga125
         network_mode: host

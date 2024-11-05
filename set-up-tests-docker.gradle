@@ -13,7 +13,7 @@ Duration interval = Duration.ofSeconds(5)
 Duration timeout = Duration.ofMinutes(5)
 
 createDockerContainer {
-	healthCheck.cmd "curl localhost:8080 && ls ${liferayRoutesDir}/default/liferay-sample-etc-node && ls ${liferayRoutesDir}/default/liferay-sample-etc-spring-boot"
+	healthCheck.cmd "/opt/liferay/health-check.sh"
 	healthCheck.interval.set interval.toNanos()
 	healthCheck.startPeriod.set Duration.ofMinutes(2).toNanos()
 	healthCheck.timeout.set timeout.toNanos()
