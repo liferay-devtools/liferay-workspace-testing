@@ -7,7 +7,7 @@ services:
             start_period: 2m
             test: "/opt/liferay/health-check.sh"
             timeout: 5m
-        image: liferay-workspace-testing-liferay:7.4.3.125-ga125
+        image: liferay-workspace-testing-liferay:2024.q3.7
         network_mode: host
         volumes:
             - routes:/opt/liferay/routes
