@@ -81,12 +81,12 @@ project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
 	}
 }
 
-tasks.named("setUpDependencies") {
+tasks.named("setUp") {
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
 	dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
 }
 
-tasks.named("tearDownDependencies") {
+tasks.named("tearDown") {
 	dependsOn ":client-extensions:liferay-sample-etc-node:stopDockerContainer"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:stopDockerContainer"
 	dependsOn ":stopDockerContainer"

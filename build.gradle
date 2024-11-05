@@ -93,8 +93,8 @@ subprojects {
 
 // Declare set up and tear down tasks for functional tests
 
-tasks.register("setUpDependencies")
-tasks.register("tearDownDependencies")
+tasks.register("setUp")
+tasks.register("tearDown")
 
 String functionalTestTaskName = "packageRunTestAllHeadless"
 
@@ -102,15 +102,15 @@ project(":playwright").afterEvaluate {
 	Project project ->
 
 	project.tasks.named("${functionalTestTaskName}") {
-		mustRunAfter ":setUpDependencies"
+		mustRunAfter ":setUp"
 	}
 }
 
 tasks.register("runFunctionalTests") {
-	dependsOn ":setUpDependencies"
+	dependsOn ":setUp"
 	dependsOn ":playwright:${functionalTestTaskName}"
 
-	finalizedBy ":tearDownDependencies"
+	finalizedBy ":tearDown"
 }
 
 String setupProfile = findProperty("setupProfile") ?: "local"

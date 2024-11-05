@@ -81,14 +81,14 @@ subprojects {
 	}
 }
 
-tasks.named("setUpDependencies") {
+tasks.named("setUp") {
 	dependsOn ":client-extensions:liferay-sample-custom-element-1:deploy"
 	dependsOn ":client-extensions:liferay-sample-custom-element-2:deploy"
 	dependsOn ":client-extensions:liferay-sample-etc-node:startMicroservice"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startMicroservice"
 }
 
-tasks.named("tearDownDependencies") {
+tasks.named("tearDown") {
 	dependsOn ":client-extensions:liferay-sample-etc-node:cleanStartMicroservice"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:cleanStartMicroservice"
 	dependsOn ":serverStop"
