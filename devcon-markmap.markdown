@@ -13,7 +13,7 @@ markmap:
 
 #### Functional Tests
 
-#### Test Profiles
+#### Set Up Test Profiles
 
 ##### [Local](devcon-local-markmap.html)
 
@@ -27,7 +27,7 @@ markmap:
 
 ### Test Development
 
-#### Run pipeline with juset Setup then run tests
+#### Run pipeline with just Setup then run tests
 
 ## DEMO
 
@@ -76,4 +76,3 @@ console.log("hello, JavaScript");
 | Banana   | 2     |
 
 ![](/favicon.png)
-

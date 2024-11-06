@@ -7,3 +7,7 @@ dependencies {
 tasks.named('testIntegration') {
 	dependsOn ":modules:demo-local-service-wrapper:deploy"
 }
+
+tasks.named('dockerDeploy') {
+  enabled = false
+}

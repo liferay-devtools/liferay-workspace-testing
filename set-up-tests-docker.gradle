@@ -35,8 +35,7 @@ startDockerContainer {
 		TaskProvider<DockerCreateContainer> dockerCreateContainerTaskProvider = project.tasks.register("createDockerContainer", DockerCreateContainer) {
 			dependsOn "buildDockerImage"
 
-			containerId.set "${project.name}-container-id"
-			containerName.set "${project.name}-docker-container-name"
+			containerName.set "${project.name}-container"
 
 			hostConfig.binds.put "routes", microserviceRoutesDir
 			hostConfig.network.set "host"

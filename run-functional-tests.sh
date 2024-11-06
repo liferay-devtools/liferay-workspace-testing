@@ -7,7 +7,7 @@ echo "Checking to see if there are still servers running from previous runs"
 # if $1 is docker or docker-compose
 if [[ "${1}" = "docker" || "${1}" = "docker-compose" ]]; then
   # Check if specific Docker containers are running
-  containers=("liferay-sample-etc-spring-boot-docker-container-name" "liferay-sample-etc-node-docker-container-name" "liferay-workspace-testing-liferay")
+  containers=("liferay-sample-etc-spring-boot-docker-container" "liferay-sample-etc-node-docker-container" "liferay-workspace-testing-liferay")
 
   for container in "${containers[@]}"; do
     echo "Checking if Docker container '${container}' is in use"
@@ -51,4 +51,3 @@ if [[ "${setupProfile}" = "local" ]]; then
 fi
 
 ./gradlew runFunctionalTests -PsetupProfile="${setupProfile}"
-
