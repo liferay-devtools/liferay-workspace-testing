@@ -21,6 +21,14 @@ jobs:
                   path: |
                       playwright/playwright-report
                       playwright/test-results
+            - if: ${{!cancelled()}}
+              name: Upload Liferay logs
+              uses: actions/upload-artifact@v4
+              with:
+                  if-no-files-found: "warn"
+                  include-hidden-files: "true"
+                  name: liferay-logs-${{matrix.setupProfile}}
+                  path: logs
         strategy:
             matrix:
                 setupProfile: [local, docker, docker-compose]
