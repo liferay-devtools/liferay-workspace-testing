@@ -1,4 +1,6 @@
 dockerCompose {
+	captureContainersOutput = true
+	captureContainersOutputToFiles = project.file('my-logs-dir')
 	useComposeFiles = ['docker-compose.yaml']
 }
 

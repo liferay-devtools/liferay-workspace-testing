@@ -28,7 +28,9 @@ jobs:
                   if-no-files-found: "warn"
                   include-hidden-files: "true"
                   name: liferay-logs-${{matrix.setupProfile}}
-                  path: logs/*
+                  path: |
+                      logs/
+                      my-logs-dir/
         strategy:
             matrix:
                 setupProfile: [local, docker, docker-compose]
