@@ -11,6 +11,8 @@ jobs:
                   java-version: "8"
             - name: run functional tests
               run: ./run-functional-tests.sh ${{matrix.setupProfile}}
+            - name: list everything
+              run: ls *
             - if: ${{!cancelled()}}
               name: Upload test reports
               uses: actions/upload-artifact@v4
