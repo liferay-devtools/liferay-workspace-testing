@@ -10,6 +10,7 @@ services:
         image: liferay-workspace-testing-liferay:2024.q3.7
         network_mode: host
         volumes:
+            - ./logs:/opt/liferay/logs
             - routes:/opt/liferay/routes
     microservice-node:
         container_name: liferay-workspace-testing-microservice-node

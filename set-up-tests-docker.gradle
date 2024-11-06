@@ -6,6 +6,7 @@ import com.liferay.workspace.testing.WaitForHealthyAction
 
 import java.time.Duration
 
+String liferayLogsDir = "/opt/liferay/logs"
 String liferayRoutesDir = "/opt/liferay/routes"
 String microserviceRoutesDir = "/etc/liferay/routes"
 
@@ -18,6 +19,7 @@ createDockerContainer {
 	healthCheck.startPeriod.set Duration.ofMinutes(2).toNanos()
 	healthCheck.timeout.set timeout.toNanos()
 
+	hostConfig.binds.put "${project.projectDir}/logs", liferayLogsDir
 	hostConfig.binds.put "routes", liferayRoutesDir
 	hostConfig.network.set "host"
 }
