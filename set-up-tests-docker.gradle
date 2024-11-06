@@ -18,7 +18,7 @@ createDockerContainer {
 	healthCheck.startPeriod.set Duration.ofMinutes(2).toNanos()
 	healthCheck.timeout.set timeout.toNanos()
 
-	hostConfig.binds.put "/tmp/liferay/logs", "/opt/liferay/logs"
+	hostConfig.binds.put System.getProperty("user.dir") + "/docker-logs", "/opt/liferay/logs"
 	hostConfig.binds.put "routes", liferayRoutesDir
 	hostConfig.network.set "host"
 }

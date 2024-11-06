@@ -25,7 +25,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: liferay-logs-${{matrix.setupProfile}}
-                  path: /tmp/liferay/logs
+                  path: docker-logs
         strategy:
             matrix:
                 setupProfile: [local, docker, docker-compose]
