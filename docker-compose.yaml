@@ -4,9 +4,9 @@ services:
         container_name: liferay-workspace-testing-liferay-portal
         healthcheck:
             interval: 5s
-            start_period: 2m
+            start_period: 3m
             test: "/opt/liferay/health-check.sh"
-            timeout: 5m
+            timeout: 10m
         image: liferay-workspace-testing-liferay:2024.q3.7
         network_mode: host
         volumes:

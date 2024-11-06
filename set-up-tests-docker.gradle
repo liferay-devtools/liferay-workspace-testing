@@ -10,7 +10,7 @@ String liferayRoutesDir = "/opt/liferay/routes"
 String microserviceRoutesDir = "/etc/liferay/routes"
 
 Duration interval = Duration.ofSeconds(5)
-Duration timeout = Duration.ofMinutes(5)
+Duration timeout = Duration.ofMinutes(10)
 
 createDockerContainer {
 	healthCheck.cmd "/opt/liferay/health-check.sh"

@@ -24,7 +24,7 @@ console.log("hello, JavaScript");
 
 | Products | Price |
 | -------- | ----- |
-| Apple    | 4     |
-| Banana   | 2     |
+| Apple | 4 |
+| Banana | 2 |
 
 ![](/favicon.png)
