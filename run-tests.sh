@@ -1,3 +1,4 @@
-./gradlew initBundle
+./gradlew cleanInitBundle initBundle
 
-./gradlew build --info
+./gradlew clean build -PsetupProfile="integration"
+
