@@ -24,13 +24,13 @@ fi
 #
 
 for host in "localhost:8080" "localhost:3001" "localhost:58081"; do
-  # if not equal to 000, then there is a server running
-  if [[ $(curl -s -o /dev/null -w "%{http_code}" http://${host}) != "000" ]]; then
-    echo "There is a server running on ${host}"
-    echo "Please stop the server before running the functional tests"
-    echo 'sudo lsof -i -n -P | grep TCP | grep -E "3001|8080|58081"'
-    exit 1
-  fi
+# if not equal to 000, then there is a server running
+if [[ $(curl -s -o /dev/null -w "%{http_code}" http://${host}) != "000" ]]; then
+	echo "There is a server running on ${host}"
+	echo "Please stop the server before running the functional tests"
+	echo 'sudo lsof -i -n -P | grep TCP | grep -E "3001|8080|58081"'
+	exit 1
+fi
 done
 
 setupProfile="${1-local}"
