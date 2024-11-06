@@ -11,6 +11,11 @@ jobs:
                   java-version: "11"
             - name: run functional tests
               run: ./run-functional-tests.sh ${{matrix.setupProfile}}
+            - name: Upload logs
+              uses: actions/upload-artifact@v4
+              with:
+                  name: liferay-logs-${{matrix.setupProfile}}
+                  path: docker-logs
             - if: ${{!cancelled()}}
               name: Upload test reports
               uses: actions/upload-artifact@v4
@@ -21,11 +26,6 @@ jobs:
                   path: |
                       playwright/playwright-report
                       playwright/test-results
-            - name: Upload logs
-              uses: actions/upload-artifact@v4
-              with:
-                  name: liferay-logs-${{matrix.setupProfile}}
-                  path: docker-logs
         strategy:
             matrix:
                 setupProfile: [local, docker, docker-compose]
