@@ -11,7 +11,8 @@ jobs:
                   java-version: "8"
             - name: run functional tests
               run: ./run-functional-tests.sh ${{matrix.setupProfile}}
-            - name: list everything
+            - if: ${{!cancelled()}}
+              name: list everything
               run: ls *
             - if: ${{!cancelled()}}
               name: Upload test reports
@@ -31,8 +32,8 @@ jobs:
                   include-hidden-files: "true"
                   name: liferay-logs-${{matrix.setupProfile}}
                   path: |
-                      logs/
-                      my-logs-dir/
+                      ./logs/*
+                      ./my-logs-dir/*
         strategy:
             matrix:
                 setupProfile: [local, docker, docker-compose]
