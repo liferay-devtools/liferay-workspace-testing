@@ -21,6 +21,12 @@ jobs:
                   path: |
                       playwright/playwright-report
                       playwright/test-results
+            - if: ${{matrix.setupProfile == "docker"}}
+              name: Upload logs
+              uses: action/upload-artifact@v4
+              with:
+                  name: liferay-logs-${{matrix.setupProfile}}
+                  path: /tmp/liferay/logs
         strategy:
             matrix:
                 setupProfile: [local, docker, docker-compose]
