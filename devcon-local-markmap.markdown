@@ -11,21 +11,26 @@ markmap:
 
 #### downloadNode
 
-#### setUpYarn
-
 #### yarnInstall
 
 ### CX Build & Deploy (into liferay bundle)
 
-### serverStart
+### DXP ServerStart
 
-### Microservces CX Run Server (waits on DXP routes to be available)
+### Microservice CX Run NodeJS Server (waits on DXP routes to be available)
+
+### Microservice CX Run SpringBoot Server (waits on DXP routes to be available)
 
 ## Run Functional Test
 
-### Playwright Run Tests
+### yarn install
 
-###
+### Playwright Run Tests
 
 ## Tear Down
 
+### DXP ServerStop
+
+### Microservice CX Stop NodeJS Server
+
+### Microservice CX Stop SpringBoot Server
