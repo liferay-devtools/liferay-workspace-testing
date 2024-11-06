@@ -1,8 +1,10 @@
 ---
+
 title: Liferay Workspace Testing
 markmap:
   colorFreezeLevel: 2
   initialExpandLevel: 0
+
 ---
 
 ## [Repo link](https://github.com/drewbrokke/liferay-workspace-testing)
@@ -72,7 +74,7 @@ console.log("hello, JavaScript");
 
 | Products | Price |
 | -------- | ----- |
-| Apple    | 4     |
-| Banana   | 2     |
+| Apple | 4 |
+| Banana | 2 |
 
 ![](/favicon.png)

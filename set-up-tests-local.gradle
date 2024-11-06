@@ -80,13 +80,13 @@ subprojects {
 }
 
 tasks.named("setUp") {
-  // frontend CX should be deploying into liferay bundle
+	// frontend CX should be deploying into liferay bundle
 	dependsOn ":client-extensions:liferay-sample-custom-element-1:deploy"
 	dependsOn ":client-extensions:liferay-sample-custom-element-2:deploy"
 	dependsOn ":client-extensions:liferay-sample-etc-node:deploy"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:deploy"
 
-  //microservice CX should be started, but they won't start until the routes metadata is available
+	//microservice CX should be started, but they won't start until the routes metadata is available
 	dependsOn ":client-extensions:liferay-sample-etc-node:startMicroservice"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startMicroservice"
 }

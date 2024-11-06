@@ -9,5 +9,5 @@ tasks.named('testIntegration') {
 }
 
 tasks.named('dockerDeploy') {
-  enabled = false
+	enabled = false
 }
