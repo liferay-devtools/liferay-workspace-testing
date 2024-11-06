@@ -2,6 +2,7 @@ import com.liferay.gradle.util.OSDetector
 
 plugins {
 	id "com.avast.gradle.docker-compose" version "0.17.8"
+	id 'org.barfuin.gradle.taskinfo' version '2.2.0'
 }
 
 // Get executable file name based on OS
@@ -52,22 +53,19 @@ subprojects {
 	}
 
 	pluginManager.withPlugin('com.liferay.test.integration') {
+		//These dependencies are deployed to the bundle
+		//These dependencies are needed by the test runner
+
 		dependencies {
-			/*
-			These dependencies are needed by the test runner
-			 */
 			testIntegrationImplementation group: "biz.aQute.bnd", name: "biz.aQute.bndlib", version: "3.5.0"
+			testIntegrationImplementation group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge", version: "latest.release"
 			testIntegrationImplementation group: "com.liferay", name: "org.apache.logging.log4j", version: "2.17.1.LIFERAY-PATCHED-1"
 			testIntegrationImplementation group: "com.liferay", name: "org.apache.logging.log4j.core", version: "2.17.1.LIFERAY-PATCHED-1"
 			testIntegrationImplementation group: "com.liferay.portal", name: "com.liferay.portal.test", version: "latest.release"
 			testIntegrationImplementation group: "junit", name: "junit", version: "4.13.1"
 			testIntegrationImplementation group: "org.slf4j", name: "log4j-over-slf4j", version: "1.7.25"
-			testIntegrationImplementation group: 'com.liferay', name: 'com.liferay.arquillian.extension.junit.bridge', version: 'latest.release'
 
-			/*
-			These dependencies are deployed to the bundle
-			 */
-			testModules group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge.connector", version: 'latest.release'
+			testModules group: "com.liferay", name: "com.liferay.arquillian.extension.junit.bridge.connector", version: "latest.release"
 			testModules group: "com.liferay.portal", name: "com.liferay.portal.test", version: "latest.release"
 			testModules group: "com.liferay.portal", name: "com.liferay.portal.test.integration", version: "latest.release"
 			testModules group: "org.apache.aries.jmx", name: "org.apache.aries.jmx.core", version: "latest.release"
