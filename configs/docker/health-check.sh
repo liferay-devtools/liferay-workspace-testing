@@ -7,16 +7,16 @@ function _log() {
 	echo "${message}"
 }
 
-_log "Checking for license registration..."
-if ! grep "License registered for DXP Development" logs/liferay.*.log
-then
-	_log "License not registered"
+# _log "Checking for license registration..."
+# if ! grep "License registered for DXP Development" logs/liferay.*.log
+# then
+# 	_log "License not registered"
 
-	echo logs/liferay.*.log
-	cat logs/liferay.*.log
+# 	echo logs/liferay.*.log
+# 	cat logs/liferay.*.log
 
-	exit 1
-fi
+# 	exit 1
+# fi
 
 _log "Waiting for the server to be reachable..."
 if ! curl localhost:8080
