@@ -7,12 +7,13 @@ function _log() {
 	echo "${message}"
 }
 
-_log "Checking for license file..."
-if ! stat data/license/*.li
+_log "Checking for license registration..."
+if ! grep "License registered for DXP Development" logs/liferay.*.log
 then
-	_log "License file not found"
+	_log "License not registered"
 
-	echo data/license/*
+	echo logs/liferay.*.log
+	tail --lines 10 logs/liferay.*.log
 
 	exit 1
 fi
