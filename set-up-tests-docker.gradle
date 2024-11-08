@@ -80,6 +80,13 @@ project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
 	}
 }
 
+project(":modules:demo-local-service-wrapper").afterEvaluate {
+	it.dockerDeploy.enabled = false
+}
+project(":modules:demo-local-service-wrapper-test").afterEvaluate {
+	it.dockerDeploy.enabled = false
+}
+
 tasks.named("setUp") {
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
 	dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
