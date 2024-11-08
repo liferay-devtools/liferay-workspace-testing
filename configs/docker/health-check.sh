@@ -1,7 +1,10 @@
 #!/bin/bash
 
 function _log() {
-	echo "[$(date "+%Y.%m.%d %H:%M:%S")] $1" >> health-check.log
+	message="[$(date "+%Y.%m.%d %H:%M:%S")] $1"
+
+	echo "${message}" >> health-check.log
+	echo "${message}"
 }
 
 _log "Checking for license registration..."
