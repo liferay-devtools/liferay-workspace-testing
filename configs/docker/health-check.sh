@@ -1,13 +1,20 @@
 #!/bin/bash
 
 function _log() {
-	echo "[$(date "+%Y.%m.%d %H:%M:%S")] $1" >> health-check.log
+	message="[$(date "+%Y.%m.%d %H:%M:%S")] $1"
+
+	echo "${message}" >> health-check.log
+	echo "${message}"
 }
 
 _log "Checking for license registration..."
 if ! grep "License registered for DXP Development" logs/liferay.*.log
 then
 	_log "License not registered"
+
+	echo logs/liferay.*.log
+	tail --lines 10 logs/liferay.*.log
+
 	exit 1
 fi
 

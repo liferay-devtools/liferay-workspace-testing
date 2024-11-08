@@ -4,6 +4,7 @@ import com.bmuschko.gradle.docker.tasks.container.DockerExistingContainer;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.HealthState;
+import com.github.dockerjava.api.command.HealthStateLog;
 import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
@@ -11,6 +12,7 @@ import com.liferay.gradle.util.GradleUtil;
 
 import java.time.Duration;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
@@ -56,11 +58,35 @@ public class WaitForHealthyAction implements Action<DockerExistingContainer> {
 
 			HealthState health = containerState.getHealth();
 
+
 			String status = health.getStatus();
 
 			System.out.println(status);
 
-			return Objects.equals(status, "healthy");
+			if (Objects.equals(status, "healthy")) {
+				return true;
+			}
+
+			System.out.println();
+
+			List<HealthStateLog> log = health.getLog();
+
+			if (!log.isEmpty()) {
+				HealthStateLog healthStateLog = log.get(log.size() - 1);
+
+				String output = healthStateLog.getOutput();
+				System.out.println("output = " + output);
+
+				String start = healthStateLog.getStart();
+				System.out.println("start = " + start);
+
+				String end = healthStateLog.getEnd();
+				System.out.println("end = " + end);
+
+				System.out.println();
+			}
+
+			return false;
 		};
 
 		try {
