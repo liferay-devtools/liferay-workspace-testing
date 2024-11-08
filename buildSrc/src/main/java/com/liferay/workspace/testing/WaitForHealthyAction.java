@@ -12,6 +12,7 @@ import com.liferay.gradle.util.GradleUtil;
 
 import java.time.Duration;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
@@ -67,7 +68,12 @@ public class WaitForHealthyAction implements Action<DockerExistingContainer> {
 			}
 
 			System.out.println();
-			for (HealthStateLog healthStateLog : health.getLog()) {
+
+			List<HealthStateLog> log = health.getLog();
+
+			if (!log.isEmpty()) {
+				HealthStateLog healthStateLog = log.get(log.size() - 1);
+
 				String output = healthStateLog.getOutput();
 				System.out.println("output = " + output);
 
