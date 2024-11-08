@@ -10,16 +10,20 @@ import org.zeroturnaround.process.PidProcess
 import org.zeroturnaround.process.ProcessUtil
 import org.zeroturnaround.process.Processes
 
-tasks.register("serverStart", ServerStartTask)
-tasks.register("serverStop", ServerStopTask)
+tasks.register("serverStartLiferay", ServerStartTask)
+tasks.register("serverStopLiferay", ServerStopTask)
+
+tasks.register("deployProjects") {
+	dependsOn ":client-extensions:liferay-sample-custom-element-1:deploy"
+	dependsOn ":client-extensions:liferay-sample-custom-element-2:deploy"
+	dependsOn ":client-extensions:liferay-sample-etc-node:deploy"
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:deploy"
+}
 
 project(":client-extensions:liferay-sample-etc-node") {
 	Project project ->
 
 	project.tasks.register('startMicroservice', ExecuteAndWaitForTask) {
-		dependsOn "deploy"
-		dependsOn ":serverStart"
-
 		doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
 
 		execArgs.addAll rootProject.file("gradlew").path, "${project.path}:packageRunStart"
@@ -35,9 +39,6 @@ project(":client-extensions:liferay-sample-etc-spring-boot") {
 	Project project ->
 
 	project.tasks.register('startMicroservice', ExecuteAndWaitForTask) {
-		dependsOn "deploy"
-		dependsOn ":serverStart"
-
 		doFirst new WaitForFileExistsAction(provider {"${gradle.liferayWorkspace.homeDir}/routes/default/${project.name}"})
 
 		execArgs.addAll rootProject.file("gradlew").path, "${project.path}:bootRun"
@@ -55,6 +56,9 @@ subprojects {
 	afterEvaluate {
 		tasks.withType(ExecuteAndWaitForTask) {
 			task ->
+
+			task.dependsOn ":deployProjects"
+			task.dependsOn ":serverStartLiferay"
 
 			String name = task.name
 
@@ -81,15 +85,23 @@ subprojects {
 	}
 }
 
-tasks.named("setUp") {
-	dependsOn ":client-extensions:liferay-sample-custom-element-1:deploy"
-	dependsOn ":client-extensions:liferay-sample-custom-element-2:deploy"
+tasks.register("startMicroservices") {
 	dependsOn ":client-extensions:liferay-sample-etc-node:startMicroservice"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startMicroservice"
 }
 
-tasks.named("tearDown") {
+tasks.register("stopMicroservices") {
 	dependsOn ":client-extensions:liferay-sample-etc-node:cleanStartMicroservice"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:cleanStartMicroservice"
-	dependsOn ":serverStop"
+}
+
+tasks.named("setUp") {
+	dependsOn "deployProjects"
+	dependsOn "serverStartLiferay"
+	dependsOn "startMicroservices"
+}
+
+tasks.named("tearDown") {
+	dependsOn "serverStopLiferay"
+	dependsOn "stopMicroservices"
 }
