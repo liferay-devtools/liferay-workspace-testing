@@ -4,6 +4,7 @@ import com.bmuschko.gradle.docker.tasks.container.DockerExistingContainer;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.HealthState;
+import com.github.dockerjava.api.command.HealthStateLog;
 import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
@@ -56,11 +57,30 @@ public class WaitForHealthyAction implements Action<DockerExistingContainer> {
 
 			HealthState health = containerState.getHealth();
 
+
 			String status = health.getStatus();
 
 			System.out.println(status);
 
-			return Objects.equals(status, "healthy");
+			if (Objects.equals(status, "healthy")) {
+				return true;
+			}
+
+			System.out.println();
+			for (HealthStateLog healthStateLog : health.getLog()) {
+				String output = healthStateLog.getOutput();
+				System.out.println("output = " + output);
+
+				String start = healthStateLog.getStart();
+				System.out.println("start = " + start);
+
+				String end = healthStateLog.getEnd();
+				System.out.println("end = " + end);
+
+				System.out.println();
+			}
+
+			return false;
 		};
 
 		try {
