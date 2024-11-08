@@ -11,6 +11,9 @@ _log "Checking for license file..."
 if ! stat data/license/*.li
 then
 	_log "License file not found"
+
+	echo data/license/*
+
 	exit 1
 fi
 
