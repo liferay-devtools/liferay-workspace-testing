@@ -10,7 +10,7 @@ String liferayRoutesDir = "/opt/liferay/routes"
 String microserviceRoutesDir = "/etc/liferay/routes"
 
 Duration interval = Duration.ofSeconds(5)
-Duration timeout = Duration.ofMinutes(5)
+Duration timeout = Duration.ofMinutes(10)
 
 createDockerContainer {
 	healthCheck.cmd "/opt/liferay/health-check.sh"
@@ -35,8 +35,7 @@ startDockerContainer {
 		TaskProvider<DockerCreateContainer> dockerCreateContainerTaskProvider = project.tasks.register("createDockerContainer", DockerCreateContainer) {
 			dependsOn "buildDockerImage"
 
-			containerId.set "${project.name}-container-id"
-			containerName.set "${project.name}-docker-container-name"
+			containerName.set "${project.name}-container"
 
 			hostConfig.binds.put "routes", microserviceRoutesDir
 			hostConfig.network.set "host"
