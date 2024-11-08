@@ -4,6 +4,10 @@ dependencies {
 	testIntegrationImplementation group: "com.liferay.portal", name: "release.dxp.api"
 }
 
+tasks.named('dockerDeploy') {
+	enabled = false
+}
+
 tasks.named('testIntegration') {
 	dependsOn ":modules:demo-local-service-wrapper:deploy"
 }

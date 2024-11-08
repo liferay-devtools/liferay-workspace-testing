@@ -1,5 +1,5 @@
 dependencies {
-	implementation group: "com.liferay", name: "com.liferay.gradle.plugins.workspace", version: "12.0.0"
+	implementation group: "com.liferay", name: "com.liferay.gradle.plugins.workspace", version: "12.1.1"
 	implementation group: "org.zeroturnaround", name: "zt-exec", version: "1.12"
 	implementation group: "org.zeroturnaround", name: "zt-process-killer", version: "1.11"
 }
