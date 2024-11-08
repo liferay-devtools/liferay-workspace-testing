@@ -11,6 +11,10 @@ _log "Checking for license registration..."
 if ! grep "License registered for DXP Development" logs/liferay.*.log
 then
 	_log "License not registered"
+
+	echo logs/liferay.*.log
+	cat logs/liferay.*.log
+
 	exit 1
 fi
 
