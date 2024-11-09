@@ -89,10 +89,13 @@ subprojects {
 	}
 }
 
-// Declare set up and tear down tasks for functional tests
+// Declare funcitonal testing lifecycle tasks
 
 tasks.register("setUp")
+tasks.register("runFunctionalTests")
 tasks.register("tearDown")
+
+// Use playwright tasks for functional testing
 
 String functionalTestTaskName = "packageRunTestAllHeadless"
 
@@ -104,12 +107,14 @@ project(":playwright").afterEvaluate {
 	}
 }
 
-tasks.register("runFunctionalTests") {
+tasks.named("runFunctionalTests") {
 	dependsOn ":setUp"
 	dependsOn ":playwright:${functionalTestTaskName}"
 
 	finalizedBy ":tearDown"
 }
+
+// apply a profile that will add tasks to the lifecycle tasks above
 
 String setupProfile = findProperty("setupProfile") ?: "local"
 
