@@ -1,17 +1,20 @@
-dockerCompose {
-	useComposeFiles = ['docker-compose.yaml']
-}
-
-composeUp {
-	dependsOn ":buildDockerImage"
-	dependsOn ":client-extensions:liferay-sample-etc-node:buildDockerImage"
-	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:buildDockerImage"
-}
-
+// add dependencies to the lifecycle tasks
 tasks.named("setUp") {
 	dependsOn ":composeUp"
 }
 
 tasks.named("tearDown") {
 	dependsOn ":composeDown"
+}
+
+// before we start compose-up build the necessary images
+composeUp {
+	dependsOn ":buildDockerImage"
+	dependsOn ":client-extensions:liferay-sample-etc-node:buildDockerImage"
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:buildDockerImage"
+}
+
+// register our compose file with dockerCompose plugin
+dockerCompose {
+	useComposeFiles = ['docker-compose.yaml']
 }

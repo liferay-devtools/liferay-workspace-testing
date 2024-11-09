@@ -6,6 +6,21 @@ import com.liferay.workspace.testing.WaitForHealthyAction
 
 import java.time.Duration
 
+// add task depends to the lifecycle tasks
+tasks.named("setUp") {
+  // startDockerContainer is a task from liferay workspace plugin
+  // it implicitly includes the deploy tasks for all modules and client extensions
+	dependsOn ":startDockerContainer"
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
+	dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
+}
+
+tasks.named("tearDown") {
+	dependsOn ":stopDockerContainer"
+	dependsOn ":client-extensions:liferay-sample-etc-node:stopDockerContainer"
+	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:stopDockerContainer"
+}
+
 String liferayRoutesDir = "/opt/liferay/routes"
 String microserviceRoutesDir = "/etc/liferay/routes"
 
@@ -80,13 +95,4 @@ project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
 	}
 }
 
-tasks.named("setUp") {
-	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
-	dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
-}
 
-tasks.named("tearDown") {
-	dependsOn ":client-extensions:liferay-sample-etc-node:stopDockerContainer"
-	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:stopDockerContainer"
-	dependsOn ":stopDockerContainer"
-}
