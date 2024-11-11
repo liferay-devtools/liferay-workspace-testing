@@ -109,3 +109,19 @@ subprojects {
 		}
 	}
 }
+
+tasks.named("deployProjects") {
+	doLast {
+		println "deployProjects finished"
+	}
+}
+tasks.named("serverStartLiferay") {
+	doLast {
+		println "serverStartLiferay finished"
+	}
+}
+tasks.named("startMicroservices") {
+	doLast {
+		println "startMicroservices finished"
+	}
+}
