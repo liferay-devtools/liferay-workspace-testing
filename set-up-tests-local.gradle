@@ -78,7 +78,7 @@ subprojects {
 	Project project ->
 
 	afterEvaluate {
-    // make sure all microservices depend on both deployment and  server start
+		// make sure all microservices depend on both deployment and server start
 		tasks.withType(ExecuteAndWaitForTask) {
 			task ->
 
@@ -109,5 +109,3 @@ subprojects {
 		}
 	}
 }
-
-

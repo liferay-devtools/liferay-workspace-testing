@@ -8,8 +8,8 @@ import java.time.Duration
 
 // add task depends to the lifecycle tasks
 tasks.named("setUp") {
-  // startDockerContainer is a task from liferay workspace plugin
-  // it implicitly includes the deploy tasks for all modules and client extensions
+	// startDockerContainer is a task from liferay workspace plugin
+	// it implicitly includes the deploy tasks for all modules and client extensions
 	dependsOn ":startDockerContainer"
 	dependsOn ":client-extensions:liferay-sample-etc-spring-boot:startDockerContainer"
 	dependsOn ":client-extensions:liferay-sample-etc-node:startDockerContainer"
@@ -94,5 +94,3 @@ project(":client-extensions:liferay-sample-etc-spring-boot").afterEvaluate {
 		healthCheck.cmd "curl localhost:58081"
 	}
 }
-
-
