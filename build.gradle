@@ -119,3 +119,19 @@ tasks.named("runFunctionalTests") {
 String setupProfile = findProperty("setupProfile") ?: "local"
 
 apply from: "set-up-tests-${setupProfile}.gradle"
+
+tasks.named("setUp") {
+	doLast {
+		println "setUp finished: ${setupProfile}"
+	}
+}
+tasks.named("runFunctionalTests") {
+	doFirst {
+		println "runFunctionalTests finished: ${setupProfile}"
+	}
+}
+tasks.named("tearDown") {
+	doFirst {
+		println "tearDown finished: ${setupProfile}"
+	}
+}

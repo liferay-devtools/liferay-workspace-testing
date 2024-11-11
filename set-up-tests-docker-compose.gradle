@@ -18,3 +18,30 @@ composeUp {
 dockerCompose {
 	useComposeFiles = ['docker-compose.yaml']
 }
+
+// for printing out markers in ascii cast files
+tasks.named("composeUp") {
+	doLast {
+		println "composeUp finished"
+	}
+}
+
+tasks.named("buildDockerImage") {
+	doLast {
+		println "buildDockerImage finished"
+	}
+}
+project(':client-extensions:liferay-sample-etc-node').afterEvaluate {
+  tasks.named("buildDockerImage") {
+    doLast {
+      println ":client-extensions:liferay-sample-etc-node:buildDockerImage finished"
+    }
+  }
+}
+project(':client-extensions:liferay-sample-etc-spring-boot').afterEvaluate {
+  tasks.named("buildDockerImage") {
+    doLast {
+      println ":client-extensions:liferay-sample-etc-spring-boot:buildDockerImage finished"
+    }
+  }
+}

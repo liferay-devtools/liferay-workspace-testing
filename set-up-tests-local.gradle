@@ -78,7 +78,7 @@ subprojects {
 	Project project ->
 
 	afterEvaluate {
-    // make sure all microservices depend on both deployment and  server start
+		// make sure all microservices depend on both deployment and server start
 		tasks.withType(ExecuteAndWaitForTask) {
 			task ->
 
@@ -110,4 +110,18 @@ subprojects {
 	}
 }
 
-
+tasks.named("deployProjects") {
+	doLast {
+		println "deployProjects finished"
+	}
+}
+tasks.named("serverStartLiferay") {
+	doLast {
+		println "serverStartLiferay finished"
+	}
+}
+tasks.named("startMicroservices") {
+	doLast {
+		println "startMicroservices finished"
+	}
+}
